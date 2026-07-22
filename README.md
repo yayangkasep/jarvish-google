@@ -1,0 +1,40 @@
+# J.A.R.V.I.S Google Bot
+
+Asisten Telegram cerdas berbasis AI dengan integrasi Google Workspace (Calendar, Tasks, Gmail, Drive) dan kemampuan terminal.
+
+## 🚀 Instalasi Cepat di VPS/Server (One-Liner)
+
+Gunakan perintah `curl` berikut di terminal server Linux Anda (Ubuntu/Debian) untuk menginstal J.A.R.V.I.S secara otomatis ke direktori `/opt/jarvish-google/` dan mendaftarkannya sebagai *Background Service* (`systemd`).
+
+Karena ini adalah repositori privat (tertutup), Anda harus menggunakan **Personal Access Token (PAT)** dari GitHub untuk mengunduh skrip instalasi, lalu Git akan meminta token tersebut kembali saat melakukan kloning.
+
+Ubah `YOUR_GITHUB_TOKEN` di bawah ini dengan token Anda:
+
+```bash
+curl -s -H "Authorization: token YOUR_GITHUB_TOKEN" -L https://raw.githubusercontent.com/yayangkasep/jarvish-google/master/install.sh | sudo bash
+```
+
+> **Perhatian:**
+> 1. Pastikan server sudah terinstal `python3`, `python3-venv`, `python3-pip`, dan `git`.
+> 2. Skrip instalasi akan secara otomatis meminta Git untuk men-*download* seluruh sumber daya (*source code*). Anda mungkin akan dimintai *Username* dan *Token* GitHub lagi pada tahap ini.
+
+## 📁 Apa yang dilakukan Installer?
+
+1. **Membuat Folder:** Menyiapkan tempat khusus di `/opt/jarvish-google/`.
+2. **Kloning Repo:** Menarik kode sumber versi terbaru dari GitHub.
+3. **Environment:** Membuat *Virtual Environment* Python (`.venv`) dan menginstal seluruh pustaka (`requirements.txt`).
+4. **Backend (Docker):** Mengunduh *image* `antigravity-manager` dan `searxng`, lalu menyalakannya.
+5. **Systemd Service:** Mengonfigurasi `jarvish.service` sehingga bot otomatis berjalan di latar belakang dan *auto-restart* jika server mati.
+
+## ⚙️ Perintah Operasional
+
+Setelah J.A.R.V.I.S terinstal, Anda bisa mengelolanya dengan perintah *systemd* standar:
+
+- **Cek Status Bot:** 
+  `sudo systemctl status jarvish`
+- **Melihat Log Obrolan/Error secara Real-time:** 
+  `sudo journalctl -u jarvish -f`
+- **Merestart Bot:** 
+  `sudo systemctl restart jarvish`
+- **Menghentikan Bot:** 
+  `sudo systemctl stop jarvish`

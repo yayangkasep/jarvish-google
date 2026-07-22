@@ -21,29 +21,38 @@ fi
 
 TARGET_DIR="/opt/jarvish-google"
 CURRENT_DIR=$(pwd)
+REPO_URL="https://github.com/yayangkasep/jarvish-google.git"
 
-# 2. Move/Copy to /opt if not already there
-if [ "$CURRENT_DIR" != "$TARGET_DIR" ]; then
-    echo "[INFO] Moving installation to $TARGET_DIR..."
-    if [ ! -d "$TARGET_DIR" ]; then
-        mkdir -p "$TARGET_DIR"
-    fi
-    
-    # Copy all files from current directory to target directory
-    # Using cp -rT to copy contents directly into the target folder
-    cp -rT "$CURRENT_DIR" "$TARGET_DIR"
-    
-    # Ensure the real user owns the files, not root
-    chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
-    
-    echo "[OK] Files copied to $TARGET_DIR."
-    
-    echo "[INFO] Transitioning to $TARGET_DIR to continue installation..."
-    cd "$TARGET_DIR" || exit 1
-else
-    echo "[OK] Already running in $TARGET_DIR."
-    chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
+# 2. Get the Source Code (Clone or Move)
+echo "[INFO] Preparing J.A.R.V.I.S directory at $TARGET_DIR..."
+
+if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR"
+    chown "$REAL_USER:$REAL_USER" "$TARGET_DIR"
 fi
+
+# Check if we are already inside a cloned repo (has .git) and not already in /opt
+if [ -d "$CURRENT_DIR/.git" ] && [ "$CURRENT_DIR" != "$TARGET_DIR" ]; then
+    echo "[INFO] Local repository found. Moving files to $TARGET_DIR..."
+    cp -rT "$CURRENT_DIR" "$TARGET_DIR"
+    chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
+elif [ ! -d "$TARGET_DIR/.git" ]; then
+    echo "[INFO] No local repository found (run via curl). Cloning from GitHub..."
+    echo "[!] NOTE: Since this is a PRIVATE repository, Git will ask for your GitHub Username and Personal Access Token (PAT)."
+    
+    # Clone as the REAL_USER so they own the git config
+    sudo -u "$REAL_USER" git clone "$REPO_URL" "$TARGET_DIR"
+    
+    if [ $? -ne 0 ]; then
+        echo "[ERROR] Failed to clone the repository. Please check your credentials or SSH keys."
+        exit 1
+    fi
+else
+    echo "[OK] Repository already exists in $TARGET_DIR."
+fi
+
+# Transition to the target directory
+cd "$TARGET_DIR" || exit 1
 
 # 3. Check if python3 is installed
 if command -v python3 &>/dev/null; then
@@ -66,7 +75,6 @@ fi
 echo ""
 echo "[INFO] Creating Virtual Environment (.venv)..."
 if [ ! -d ".venv" ]; then
-    # Create venv as the REAL_USER so they own it
     sudo -u "$REAL_USER" python3 -m venv .venv
     echo "[OK] Virtual Environment created."
 else
@@ -76,7 +84,6 @@ fi
 # 6. Install Requirements
 echo ""
 echo "[INFO] Installing dependencies..."
-# Upgrade pip and install requirements as REAL_USER
 sudo -u "$REAL_USER" .venv/bin/pip install --upgrade pip
 
 if [ -f "requirements.txt" ]; then
@@ -91,7 +98,6 @@ echo ""
 echo "[INFO] Setting up Backend Docker Services..."
 if command -v docker &>/dev/null; then
     echo "[OK] Docker is installed. Pulling necessary images..."
-    # Root can pull docker images
     docker pull lbjlaq/antigravity-manager:latest
     docker pull searxng/searxng:latest
     
