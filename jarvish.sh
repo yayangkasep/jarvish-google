@@ -24,6 +24,20 @@ elif [ "$1" == "status" ]; then
     sudo systemctl status jarvish.service
 elif [ "$1" == "logs" ]; then
     sudo journalctl -u jarvish.service -f
+elif [ "$1" == "update" ]; then
+    echo "Updating J.A.R.V.I.S..."
+    cd $JARVIS_DIR
+    OLD_HASH=$(git rev-parse HEAD)
+    sudo git pull origin master
+    NEW_HASH=$(git rev-parse HEAD)
+    
+    if [ "$OLD_HASH" == "$NEW_HASH" ]; then
+        echo "J.A.R.V.I.S sudah pada versi paling update!"
+    else
+        echo "Update berhasil! Merestart J.A.R.V.I.S service..."
+        sudo systemctl restart jarvish.service
+        echo "Restart selesai."
+    fi
 else
     echo "=============================================="
     echo "             J.A.R.V.I.S CLI                  "
@@ -38,5 +52,6 @@ else
     echo "  restart     Restart the service (required after configure)"
     echo "  status      Check if the bot is running"
     echo "  logs        View real-time service logs"
+    echo "  update      Pull the latest code from GitHub and restart"
     echo "=============================================="
 fi
