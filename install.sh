@@ -144,11 +144,19 @@ systemctl enable jarvish.service
 systemctl start jarvish.service
 echo "[OK] Service jarvish.service is now running in the background!"
 
+# 9. Setup Global CLI Wrapper
+echo ""
+echo "[INFO] Setting up 'jarvish' Global Command..."
+cp "$TARGET_DIR/jarvish.sh" /usr/local/bin/jarvish
+chmod +x /usr/local/bin/jarvish
+echo "[OK] 'jarvish' command is now available everywhere!"
+
 echo ""
 echo "=============================================="
 echo "  Installation Complete!"
 echo "  J.A.R.V.I.S is now securely installed in $TARGET_DIR"
-echo "  - To check status: sudo systemctl status jarvish"
-echo "  - To view logs: sudo journalctl -u jarvish -f"
-echo "  - To restart: sudo systemctl restart jarvish"
+echo "  - To configure secrets: jarvish configure"
+echo "  - To check status:      jarvish status"
+echo "  - To view logs:         jarvish logs"
+echo "  - To restart:           jarvish restart"
 echo "=============================================="
