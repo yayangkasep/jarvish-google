@@ -7,7 +7,7 @@ if [ "$1" == "configure" ]; then
     echo "Starting J.A.R.V.I.S Configurator..."
     cd $JARVIS_DIR && sudo .venv/bin/python cli.py configure
     sudo chown -R $SUDO_USER:$SUDO_USER $JARVIS_DIR/.env $JARVIS_DIR/config &>/dev/null
-elif [ "$1" == "auth" ]; then
+elif [ "$1" == "auth-google" ]; then
     echo "Starting Google Authentication..."
     cd $JARVIS_DIR && sudo .venv/bin/python tools/login_google.py
     sudo chown -R $SUDO_USER:$SUDO_USER $JARVIS_DIR/data &>/dev/null
@@ -31,8 +31,8 @@ else
     echo "Usage: jarvish [command]"
     echo ""
     echo "Available commands:"
-    echo "  configure   Run the configuration wizard (setup .env, keys, etc.)"
-    echo "  auth        Connect your Google Account (Gmail, Drive, Calendar, etc.)"
+    echo "  configure    Run the configuration wizard (setup .env, keys, etc.)"
+    echo "  auth-google  Connect your Google Account (Gmail, Drive, Calendar, etc.)"
     echo "  start       Start the J.A.R.V.I.S background service"
     echo "  stop        Stop the J.A.R.V.I.S background service"
     echo "  restart     Restart the service (required after configure)"
