@@ -51,6 +51,29 @@ else
     echo "[WARNING] requirements.txt not found! Skipping dependency installation."
 fi
 
+# 5. Install Backend Services (Docker Images)
+echo ""
+echo "[INFO] Setting up Backend Docker Services..."
+if command -v docker &>/dev/null; then
+    echo "[OK] Docker is installed. Pulling necessary images..."
+    docker pull lbjlaq/antigravity-manager:latest
+    docker pull searxng/searxng:latest
+    
+    if [ -f "docker-compose.yml" ]; then
+        echo "[INFO] Starting Antigravity Manager via docker-compose..."
+        # Fallback to older docker-compose if 'docker compose' is not a plugin
+        if docker compose version &>/dev/null; then
+            docker compose up -d antigravity-manager
+        elif command -v docker-compose &>/dev/null; then
+            docker-compose up -d antigravity-manager
+        fi
+        echo "[OK] Backend services started."
+    fi
+else
+    echo "[WARNING] Docker is not installed!"
+    echo "Please install Docker to run Antigravity Manager and SearXNG."
+fi
+
 echo ""
 echo "=============================================="
 echo "  Installation Complete!"
