@@ -48,7 +48,10 @@ elif [ ! -d "$TARGET_DIR/.git" ]; then
     fi
 else
     echo "[OK] Repository already exists in $TARGET_DIR. Updating to latest version..."
-    sudo -u "$REAL_USER" git -C "$TARGET_DIR" pull
+    git config --global --add safe.directory "$TARGET_DIR"
+    git -C "$TARGET_DIR" reset --hard
+    git -C "$TARGET_DIR" pull
+    chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
 fi
 
 # Transition to the target directory
