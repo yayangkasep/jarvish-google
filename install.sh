@@ -47,7 +47,8 @@ elif [ ! -d "$TARGET_DIR/.git" ]; then
         exit 1
     fi
 else
-    echo "[OK] Repository already exists in $TARGET_DIR."
+    echo "[OK] Repository already exists in $TARGET_DIR. Updating to latest version..."
+    sudo -u "$REAL_USER" git -C "$TARGET_DIR" pull
 fi
 
 # Transition to the target directory
