@@ -38,10 +38,44 @@ GITHUB_PERSONAL_ACCESS_TOKEN="{github_token}"
     print("✅ .env configured successfully!")
 
 def configure_antigravity():
-    content = prompt_multiline("--- Configuring config/antigravity-accounts.json ---")
+    print("\n--- Configuring config/antigravity-accounts.json ---")
+    print("Drag and drop your JSON file here and press Enter, OR paste the raw JSON content.")
+    print("If pasting raw JSON, type 'EOF' on a new line and press Enter when done:")
+    
+    try:
+        line = input().strip()
+    except EOFError:
+        print("Skipped.")
+        return
+        
+    if not line:
+        print("Skipped.")
+        return
+        
+    # Check if the first line is a file path (stripping quotes that drag-n-drop adds)
+    clean_path = line.strip("'\" ")
+    if os.path.isfile(clean_path):
+        print(f"Reading from file: {clean_path}")
+        with open(clean_path, 'r') as f:
+            content = f.read()
+    else:
+        # It's raw JSON, continue reading until EOF
+        lines = [line]
+        if line.strip() != "EOF":
+            while True:
+                try:
+                    next_line = input()
+                    if next_line.strip() == "EOF":
+                        break
+                    lines.append(next_line)
+                except EOFError:
+                    break
+        content = "\n".join(lines).strip()
+        
     if not content:
         print("Skipped.")
         return
+        
     try:
         data = json.loads(content)
         os.makedirs('config', exist_ok=True)
