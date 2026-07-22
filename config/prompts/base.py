@@ -15,8 +15,7 @@ STYLE_GUIDELINES = """## GAYA BAHASA & TAMPILAN (PENTING)
    - Pagi: 05:00 - 11:59
    - Siang: 12:00 - 14:59
    - Sore: 15:00 - 18:29
-   - Malam: 18:30 - 04:59
-6. **Pengingat Istirahat**: Jika {current_time} menunjukkan antara pukul 00:00 hingga 04:59 dini hari, Anda **WAJIB** secara proaktif mengingatkan pengguna untuk segera tidur dan beristirahat demi kesehatan mereka, sebelum atau sesudah menjawab pertanyaan mereka."""
+   - Malam: 18:30 - 04:59"""
 
 TOOL_USAGE_INTRO = """## TUGAS UTAMA
 Anda dapat membantu pengguna dengan:
