@@ -49,8 +49,8 @@ elif [ ! -d "$TARGET_DIR/.git" ]; then
 else
     echo "[OK] Repository already exists in $TARGET_DIR. Updating to latest version..."
     git config --global --add safe.directory "$TARGET_DIR"
-    git -C "$TARGET_DIR" reset --hard
-    git -C "$TARGET_DIR" pull
+    git -C "$TARGET_DIR" fetch origin
+    git -C "$TARGET_DIR" reset --hard origin/master
     chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
 fi
 
