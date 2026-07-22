@@ -8,6 +8,7 @@ from config.prompts.github import GITHUB_PROMPT
 from config.prompts.web_search import WEB_SEARCH_PROMPT
 from config.prompts.image_gen import IMAGE_GEN_PROMPT
 from config.prompts.coding import CODING_PROMPT
+from config.prompts.skill_management import SKILL_MANAGEMENT_PROMPT
 import os
 import re
 
@@ -19,10 +20,13 @@ def load_active_skills(messages):
         return ""
         
     available_skills = {}
-    for filename in os.listdir(skills_dir):
-        if filename.endswith(".md") or filename.endswith(".txt"):
-            skill_name = os.path.splitext(filename)[0].lower()
-            available_skills[skill_name] = os.path.join(skills_dir, filename)
+    for item in os.listdir(skills_dir):
+        item_path = os.path.join(skills_dir, item)
+        if os.path.isdir(item_path):
+            skill_md_path = os.path.join(item_path, "SKILL.md")
+            if os.path.exists(skill_md_path):
+                skill_name = item.lower()
+                available_skills[skill_name] = skill_md_path
             
     active_skills_content = []
     activated = set()
@@ -54,6 +58,7 @@ TOOL_PROMPTS_MAPPING = {
     "SendEmail": GMAIL_SEND_PROMPT,
     "SystemCommand": SYSTEM_OS_PROMPT,
     "UpdateJarvish": SYSTEM_OS_PROMPT,
+    "InstallSkill": SKILL_MANAGEMENT_PROMPT,
     "CalendarTool": CALENDAR_PROMPT,
     "TaskTool": TASKS_PROMPT,
     "DriveTool": DRIVE_PROMPT,
