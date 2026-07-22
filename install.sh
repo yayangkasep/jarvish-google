@@ -145,8 +145,8 @@ EOF
 echo "Enabling and starting J.A.R.V.I.S service..."
 systemctl daemon-reload
 systemctl enable jarvish.service
-systemctl start jarvish.service
-echo "[OK] Service jarvish.service is now running in the background!"
+systemctl restart jarvish.service
+echo "[OK] Service jarvish.service is now restarted in the background!"
 
 # 9. Setup Global CLI Wrapper and Binary Permissions
 echo ""
