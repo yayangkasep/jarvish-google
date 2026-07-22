@@ -40,7 +40,11 @@ def build_system_prompt(current_time, required_tools=None):
         added_prompts = set()
         
         for tool in required_tools:
-            tool_name = tool.get("function", {}).get("name")
+            # Check if it's OpenAI format or raw schema format
+            if "function" in tool:
+                tool_name = tool.get("function", {}).get("name")
+            else:
+                tool_name = tool.get("name")
             
             if tool_name in TOOL_PROMPTS_MAPPING:
                 tool_prompt = TOOL_PROMPTS_MAPPING[tool_name]
