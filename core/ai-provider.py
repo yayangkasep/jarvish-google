@@ -130,11 +130,11 @@ class AiProvider:
             current_time = (datetime.utcnow() + timedelta(hours=7)).strftime(
                 "%Y-%m-%d %H:%M:%S WIB"
             )
-            from config.prompts import SYSTEM_PROMPT_TEMPLATE
+            from config.prompt_builder import build_system_prompt
 
             SystemPrompt = {
                 "role": "system",
-                "content": SYSTEM_PROMPT_TEMPLATE.format(current_time=current_time),
+                "content": build_system_prompt(current_time, RequiredTools),
             }
             Payload["messages"] = [SystemPrompt] + Messages
         else:
