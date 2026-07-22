@@ -6,24 +6,20 @@ Asisten Telegram cerdas berbasis AI dengan integrasi Google Workspace (Calendar,
 
 Gunakan perintah `curl` berikut di terminal server Linux Anda (Ubuntu/Debian) untuk menginstal J.A.R.V.I.S secara otomatis ke direktori `/opt/jarvish-google/` dan mendaftarkannya sebagai *Background Service* (`systemd`).
 
-Karena ini adalah repositori privat (tertutup), Anda harus menggunakan **Personal Access Token (PAT)** dari GitHub untuk mengunduh skrip instalasi, lalu Git akan meminta token tersebut kembali saat melakukan kloning.
-
-Ubah `YOUR_GITHUB_TOKEN` di bawah ini dengan token Anda:
-
 ```bash
-curl -s -H "Authorization: token YOUR_GITHUB_TOKEN" -L https://raw.githubusercontent.com/yayangkasep/jarvish-google/master/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/yayangkasep/jarvish-google/master/install.sh | sudo bash
 ```
 
 > **Perhatian:**
 > 1. Pastikan server sudah terinstal `python3`, `python3-venv`, `python3-pip`, dan `git`.
-> 2. Skrip instalasi akan secara otomatis meminta Git untuk men-*download* seluruh sumber daya (*source code*). Anda mungkin akan dimintai *Username* dan *Token* GitHub lagi pada tahap ini.
+> 2. Skrip ini akan secara otomatis melakukan kloning (*download*) repositori ini langsung ke *server* Anda tanpa meminta *password*.
 
 ## 📁 Apa yang dilakukan Installer?
 
 1. **Membuat Folder:** Menyiapkan tempat khusus di `/opt/jarvish-google/`.
-2. **Kloning Repo:** Menarik kode sumber versi terbaru dari GitHub.
+2. **Kloning Repo:** Menarik kode sumber versi terbaru dari GitHub secara otomatis.
 3. **Environment:** Membuat *Virtual Environment* Python (`.venv`) dan menginstal seluruh pustaka (`requirements.txt`).
-4. **Backend (Docker):** Mengunduh *image* `antigravity-manager` dan `searxng`, lalu menyalakannya.
+4. **Backend (Docker):** Mengunduh *image* `antigravity-manager` dan `searxng`, lalu menyalakannya (jika server memiliki Docker).
 5. **Systemd Service:** Mengonfigurasi `jarvish.service` sehingga bot otomatis berjalan di latar belakang dan *auto-restart* jika server mati.
 
 ## ⚙️ Perintah Operasional

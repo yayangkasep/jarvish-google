@@ -38,7 +38,6 @@ if [ -d "$CURRENT_DIR/.git" ] && [ "$CURRENT_DIR" != "$TARGET_DIR" ]; then
     chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
 elif [ ! -d "$TARGET_DIR/.git" ]; then
     echo "[INFO] No local repository found (run via curl). Cloning from GitHub..."
-    echo "[!] NOTE: Since this is a PRIVATE repository, Git will ask for your GitHub Username and Personal Access Token (PAT)."
     
     # Clone as the REAL_USER so they own the git config
     sudo -u "$REAL_USER" git clone "$REPO_URL" "$TARGET_DIR"
