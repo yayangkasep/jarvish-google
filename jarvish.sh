@@ -28,15 +28,19 @@ elif [ "$1" == "update" ]; then
     echo "Updating J.A.R.V.I.S..."
     cd $JARVIS_DIR
     OLD_HASH=$(git rev-parse HEAD)
-    sudo git pull origin master
-    NEW_HASH=$(git rev-parse HEAD)
     
-    if [ "$OLD_HASH" == "$NEW_HASH" ]; then
-        echo "J.A.R.V.I.S sudah pada versi paling update!"
+    if sudo git pull origin master; then
+        NEW_HASH=$(git rev-parse HEAD)
+        
+        if [ "$OLD_HASH" == "$NEW_HASH" ]; then
+            echo "J.A.R.V.I.S sudah pada versi paling update!"
+        else
+            echo "Update berhasil! Merestart J.A.R.V.I.S service..."
+            sudo systemctl restart jarvish.service
+            echo "Restart selesai."
+        fi
     else
-        echo "Update berhasil! Merestart J.A.R.V.I.S service..."
-        sudo systemctl restart jarvish.service
-        echo "Restart selesai."
+        echo "Update gagal karena ada error dari Git (mungkin ada konflik file lokal)."
     fi
 else
     echo "=============================================="
