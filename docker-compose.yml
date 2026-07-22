@@ -1,0 +1,36 @@
+services:
+  antigravity-manager:
+    image: lbjlaq/antigravity-manager:latest
+    container_name: antigravity-manager
+    volumes:
+      # Map a clean directory for Antigravity's internal databases
+      - ./antigravity_data:/root/.antigravity_tools
+    environment:
+      - LOG_LEVEL=info
+      - API_KEY=test
+      - ABV_BIND_LOCAL_ONLY=false
+    ports:
+      - "8045:8045"
+    restart: unless-stopped
+
+  jarvish-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jarvish-bot
+    depends_on:
+      - antigravity-manager
+    environment:
+      - ANTIGRAVITY_ENDPOINT=http://antigravity-manager:8045/v1/chat/completions
+      - ANTIGRAVITY_API_KEY=test
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./.env:/app/.env
+      - ./core:/app/core
+      - ./main.py:/app/main.py
+      - ./config:/app/config
+      - ./connectors:/app/connectors
+      - ./tools:/app/tools
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

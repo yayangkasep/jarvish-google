@@ -1,0 +1,167 @@
+import importlib
+import sys
+import os
+import re
+
+# Import core modules
+ai_provider_mod = importlib.import_module("core.ai-provider")
+session_manager_mod = importlib.import_module("core.session-manager")
+tool_registry_mod = importlib.import_module("tools.tool-registry")
+app_settings_mod = importlib.import_module("config.app-settings")
+telegram_mcp_mod = importlib.import_module("connectors.telegram-mcp")
+agent_orchestrator_mod = importlib.import_module("core.agent-orchestrator")
+from tools.memory_tool import MemoryTool
+
+AiProvider = ai_provider_mod.AiProvider
+SessionManager = session_manager_mod.SessionManager
+ToolRegistry = tool_registry_mod.ToolRegistry
+AppSettings = app_settings_mod.AppSettings
+TelegramMcp = telegram_mcp_mod.TelegramMcp
+AgentOrchestrator = agent_orchestrator_mod.AgentOrchestrator
+
+
+def send_long_message(connector, user_id, text, msg_id=None):
+    if not text:
+        if msg_id:
+            connector.EditMessage(user_id, msg_id, "Berikut gambarnya, Pak!")
+        return
+
+    if len(text) > 4000:
+        first_chunk = text[:4000]
+        if msg_id:
+            connector.EditMessage(user_id, msg_id, first_chunk)
+        else:
+            connector.SendMessage(user_id, first_chunk)
+
+        for i in range(4000, len(text), 4000):
+            connector.SendMessage(user_id, text[i : i + 4000])
+    else:
+        if msg_id:
+            connector.EditMessage(user_id, msg_id, text)
+        else:
+            connector.SendMessage(user_id, text)
+
+
+def main():
+    print("--- Initializing Jarvish-Google System ---")
+
+    # 0. Load Configuration
+    Settings = AppSettings()
+    print(f"Environment: {Settings.EnvironmentMode}")
+    print(f"Telegram Token Loaded: {'Yes' if Settings.GetTelegramToken() else 'No'}")
+
+    # 1. Initialize Connectors
+    print("\n--- Testing Connectors ---")
+    AllowedUsers = Settings.GetAllowedUsers()
+    TelegramConnector = TelegramMcp(
+        Token=Settings.GetTelegramToken(), AllowedUsers=AllowedUsers
+    )
+    TelegramConnector.Connect()
+
+    # 2. Initialize Tools
+    print("\n--- Initializing Tools ---")
+    Registry = ToolRegistry()
+    Registry.AutoDiscoverTools(os.path.join(os.path.dirname(__file__), "tools"))
+
+    # Load GitHub MCP
+    try:
+        from core.mcp_manager import McpManager, McpToolWrapper
+
+        github_mcp_path = os.path.join(
+            os.path.dirname(__file__), "bin", "github-mcp-server"
+        )
+        if os.path.exists(github_mcp_path):
+            print("\n--- Initializing GitHub MCP ---")
+            mcp_manager = McpManager(
+                command=github_mcp_path, args=["stdio", "--toolsets=all"]
+            )
+            mcp_schemas = mcp_manager.GetSchemas()
+            for schema in mcp_schemas:
+                original_name = schema["name"]
+                tool_name = f"github_{original_name}"
+                schema["name"] = tool_name
+                wrapper = McpToolWrapper(mcp_manager, original_name)
+                Registry.RegisterTool(tool_name, wrapper, schema)
+            print(f"Registered {len(mcp_schemas)} MCP tools.")
+    except Exception as e:
+        print(f"Error loading MCP tools: {e}")
+
+    Schemas = Registry.GetToolSchemas()
+    print(f"Registered {len(Schemas)} tool schemas.")
+
+    # 3. Initialize AI Provider and Session Manager
+    print("\n--- Initializing AI Provider and Session ---")
+    Provider = AiProvider()
+    Sessions = SessionManager()
+
+    # Get memory manager from memory tool instance if available
+    memory_manager = None
+    if "MemoryTool" in Registry.AvailableTools:
+        memory_manager = Registry.AvailableTools["MemoryTool"][
+            "Instance"
+        ].memory_manager
+    else:
+        # Fallback manual init
+        memory_manager = MemoryTool().memory_manager
+
+    Orchestrator = AgentOrchestrator(Provider, Sessions, Registry, memory_manager)
+
+    # 4. Message Handler for Telegram
+    def handle_incoming_message(user_id, text, image_base64=None):
+        if text and text.startswith("/start"):
+            TelegramConnector.SendMessage(
+                user_id,
+                "Selamat datang, Pak. Sistem J.A.R.V.I.S telah aktif dan siap menerima perintah Anda.",
+            )
+            return
+        elif text and text.startswith("/help"):
+            TelegramConnector.SendMessage(
+                user_id,
+                "Protokol Bantuan Aktif, Pak.\n\nAnda dapat memberikan instruksi apa pun kepada saya melalui teks. Jika Anda ingin mereset memori saya untuk memulai topik baru, silakan gunakan perintah /clear.",
+            )
+            return
+        elif text and text.startswith("/clear"):
+            Sessions.ClearSession(user_id)
+            TelegramConnector.SendMessage(
+                user_id,
+                "Memori sesi telah dihapus, Pak. Kita mulai dengan sistem yang segar. Apa perintah Anda selanjutnya?",
+            )
+            return
+
+        print(f"Processing message from {user_id}...")
+        msg_id = TelegramConnector.SendMessage(user_id, "Thinking...")
+
+        def progress_cb(msg):
+            TelegramConnector.EditMessage(user_id, msg_id, msg)
+
+        try:
+            Response = Orchestrator.process_message(
+                user_id, text, image_base64, progress_cb
+            )
+
+            # Extract and send markdown images first
+            images = re.findall(r"!\[(.*?)\]\((.*?)\)", Response)
+            if images:
+                for caption, url in images:
+                    TelegramConnector.SendPhoto(user_id, url, caption)
+                    Response = Response.replace(f"![{caption}]({url})", "").strip()
+
+            send_long_message(TelegramConnector, user_id, Response, msg_id)
+
+        except Exception as e:
+            print(f"Error processing prompt: {e}")
+            TelegramConnector.EditMessage(
+                user_id,
+                msg_id,
+                "Sorry, I encountered an error while communicating with the AI.",
+            )
+
+    # 5. Start Polling
+    if TelegramConnector.IsConnected:
+        TelegramConnector.StartPolling(handle_incoming_message)
+    else:
+        print("Failed to start bot: Telegram connector is not connected.")
+
+
+if __name__ == "__main__":
+    main()
