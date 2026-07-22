@@ -30,6 +30,28 @@ class InstallSkillTool:
             }
         }
 
+    def _normalize_github_url(self, url):
+        """Mengubah URL github biasa menjadi raw github content URL"""
+        if not url or "github.com" not in url:
+            return url
+            
+        # Case 1: URL menuju file spesifik (blob)
+        # cth: https://github.com/user/repo/blob/main/SKILL.md
+        if "/blob/" in url:
+            return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+            
+        # Case 2: URL menuju folder (tree)
+        # cth: https://github.com/user/repo/tree/main/folder
+        if "/tree/" in url:
+            url = url.replace("github.com", "raw.githubusercontent.com").replace("/tree/", "/")
+            if not url.endswith(".md"):
+                if not url.endswith("/"):
+                    url += "/"
+                url += "SKILL.md"
+            return url
+            
+        return url
+
     def Execute(self, Arguments):
         skill_name = Arguments.get("skill_name")
         source_url = Arguments.get("source_url")
@@ -52,6 +74,7 @@ class InstallSkillTool:
 
             final_content = content
             if source_url:
+                source_url = self._normalize_github_url(source_url)
                 response = requests.get(source_url, timeout=10)
                 if response.status_code == 200:
                     final_content = response.text
