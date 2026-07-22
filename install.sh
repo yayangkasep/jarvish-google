@@ -74,10 +74,43 @@ else
     echo "Please install Docker to run Antigravity Manager and SearXNG."
 fi
 
+# 6. Setup Systemd Service
+echo ""
+echo "[INFO] Setting up J.A.R.V.I.S Systemd Service..."
+SERVICE_PATH="/etc/systemd/system/jarvish.service"
+CURRENT_DIR=$(pwd)
+CURRENT_USER=$(whoami)
+
+echo "Generating service file..."
+cat <<EOF | sudo tee $SERVICE_PATH > /dev/null
+[Unit]
+Description=Jarvish AI Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=$CURRENT_USER
+WorkingDirectory=$CURRENT_DIR
+ExecStart=$CURRENT_DIR/.venv/bin/python $CURRENT_DIR/main.py
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "Enabling and starting J.A.R.V.I.S service..."
+sudo systemctl daemon-reload
+sudo systemctl enable jarvish.service
+sudo systemctl start jarvish.service
+echo "[OK] Service jarvish.service is now running in the background!"
+
 echo ""
 echo "=============================================="
 echo "  Installation Complete!"
-echo "  To start J.A.R.V.I.S, run the following:"
-echo "  1. source .venv/bin/activate"
-echo "  2. python main.py"
+echo "  J.A.R.V.I.S is now installed as a background service."
+echo "  - To check status: sudo systemctl status jarvish"
+echo "  - To view logs: sudo journalctl -u jarvish -f"
+echo "  - To restart: sudo systemctl restart jarvish"
 echo "=============================================="
