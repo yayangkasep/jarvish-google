@@ -29,6 +29,15 @@ class InstallSkillTool:
                 }
             }
         }
+        
+    def _get_base_github_repo(self, url):
+        """Mendapatkan URL base repository dari URL github apapun"""
+        if "github.com" in url:
+            parts = url.split("/")
+            # format: https: / / github.com / user / repo / ...
+            if len(parts) >= 5:
+                return "/".join(parts[:5])
+        return url
 
     def _normalize_github_url(self, url):
         """Mengubah URL github biasa menjadi raw github content URL"""
@@ -74,18 +83,39 @@ class InstallSkillTool:
 
             final_content = content
             if source_url:
-                source_url = self._normalize_github_url(source_url)
-                response = requests.get(source_url, timeout=10)
-                if response.status_code == 200:
-                    final_content = response.text
+                if "github.com" in source_url and "raw.githubusercontent.com" not in source_url:
+                    import subprocess
+                    import shutil
+                    base_repo = self._get_base_github_repo(source_url)
+                    
+                    if os.path.exists(skill_path):
+                        shutil.rmtree(skill_path, ignore_errors=True)
+                        
+                    result = subprocess.run(["git", "clone", base_repo, skill_path], capture_output=True, text=True)
+                    if result.returncode != 0:
+                        return f"Error: Gagal melakukan git clone dari {base_repo}. {result.stderr}"
+                        
+                    git_dir = os.path.join(skill_path, ".git")
+                    if os.path.exists(git_dir):
+                        shutil.rmtree(git_dir, ignore_errors=True)
+                        
+                    return f"Sukses! Skill repositori '{skill_name}' berhasil dikloning sepenuhnya dari {base_repo} ke {skill_path}. File pendukung telah tersedia."
+                    
                 else:
-                    return f"Error: Gagal mengunduh dari URL. HTTP Status: {response.status_code}"
+                    source_url = self._normalize_github_url(source_url)
+                    response = requests.get(source_url, timeout=10)
+                    if response.status_code == 200:
+                        final_content = response.text
+                    else:
+                        return f"Error: Gagal mengunduh dari URL. HTTP Status: {response.status_code}"
 
-            if not final_content:
+            if not final_content and not ("github.com" in source_url and "raw.githubusercontent.com" not in source_url):
                 return "Error: Konten skill kosong."
 
-            with open(skill_file, "w", encoding="utf-8") as f:
-                f.write(final_content)
+            if final_content:
+                os.makedirs(skill_path, exist_ok=True)
+                with open(skill_file, "w", encoding="utf-8") as f:
+                    f.write(final_content)
 
             return f"Sukses! Skill '{skill_name}' berhasil dipasang dan disimpan di {skill_file}. Sekarang Anda bisa menggunakan '@{skill_name}' di obrolan."
 

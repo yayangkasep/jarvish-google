@@ -28,8 +28,16 @@ def load_active_skills(messages):
         for item in os.listdir(skills_dir):
             item_path = os.path.join(skills_dir, item)
             if os.path.isdir(item_path):
-                skill_md_path = os.path.join(item_path, "SKILL.md")
-                if os.path.exists(skill_md_path):
+                skill_md_path = None
+                for root, dirs, files in os.walk(item_path):
+                    # Ignore .git directory to speed up search
+                    if ".git" in dirs:
+                        dirs.remove(".git")
+                    if "SKILL.md" in files:
+                        skill_md_path = os.path.join(root, "SKILL.md")
+                        break
+                        
+                if skill_md_path:
                     skill_name = item.lower()
                     available_skills[skill_name] = skill_md_path
             
