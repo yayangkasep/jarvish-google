@@ -53,6 +53,7 @@ TOOL_PROMPTS_MAPPING = {
     "ReadRecentEmails": GMAIL_READ_PROMPT,
     "SendEmail": GMAIL_SEND_PROMPT,
     "SystemCommand": SYSTEM_OS_PROMPT,
+    "UpdateJarvish": SYSTEM_OS_PROMPT,
     "CalendarTool": CALENDAR_PROMPT,
     "TaskTool": TASKS_PROMPT,
     "DriveTool": DRIVE_PROMPT,
