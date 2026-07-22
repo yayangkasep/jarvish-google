@@ -24,8 +24,11 @@ class GoogleAuthManager:
             )
             return None
 
-        creds = Credentials.from_authorized_user_file(self.token_path, self.scopes)
-
+        try:
+            creds = Credentials.from_authorized_user_file(self.token_path, self.scopes)
+        except Exception as e:
+            print(f"GoogleAuthManager: Error loading token.json: {e}")
+            return None
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 try:

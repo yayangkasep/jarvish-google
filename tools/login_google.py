@@ -50,10 +50,12 @@ def main():
     }
 
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first time.
     if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        except Exception as e:
+            print(f"Warning: Could not load existing token.json (it might be missing a refresh_token): {e}")
+            creds = None
 
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
@@ -64,7 +66,8 @@ def main():
             print("No valid token found. Please visit the URL below to authorize:")
             flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
             # Run local server on port 8080 (must match what's allowed in Google Console)
-            creds = flow.run_local_server(port=8080, open_browser=False)
+            # prompt='consent' forces Google to issue a new refresh_token even if previously authorized
+            creds = flow.run_local_server(port=8080, open_browser=False, prompt='consent')
 
         # Save the credentials for the next run
         with open(token_path, "w") as token:
