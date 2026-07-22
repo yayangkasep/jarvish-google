@@ -18,12 +18,25 @@ def prompt_multiline(prompt_text):
     return "\n".join(lines).strip()
 
 def configure_env():
+    import dotenv
+    existing_env = dotenv.dotenv_values(".env")
+    
+    def get_input_with_default(prompt_text, key):
+        default_val = existing_env.get(key, "")
+        if default_val:
+            masked = default_val[:4] + "***" + default_val[-4:] if len(default_val) > 8 else "***"
+            ans = input(f"{prompt_text} [Punya Anda: {masked}]: ").strip()
+            return ans if ans else default_val
+        else:
+            return input(f"{prompt_text}: ").strip()
+
     print("\n--- Configuring .env (Telegram & Secrets) ---")
-    token = input("Enter TELEGRAM_BOT_TOKEN: ").strip()
-    allowed = input("Enter TELEGRAM_ALLOWED_USERS (comma-separated, e.g., 12345,67890): ").strip()
-    google_id = input("Enter GOOGLE_CLIENT_ID (Optional, leave blank to skip): ").strip()
-    google_secret = input("Enter GOOGLE_CLIENT_SECRET (Optional, leave blank to skip): ").strip()
-    github_token = input("Enter GITHUB_PERSONAL_ACCESS_TOKEN (Optional, leave blank to skip): ").strip()
+    print("(Tekan Enter jika tidak ingin mengubah nilai yang sudah ada)")
+    token = get_input_with_default("Enter TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_TOKEN")
+    allowed = get_input_with_default("Enter TELEGRAM_ALLOWED_USERS (comma-separated)", "TELEGRAM_ALLOWED_USERS")
+    google_id = get_input_with_default("Enter GOOGLE_CLIENT_ID (Optional)", "GOOGLE_CLIENT_ID")
+    google_secret = get_input_with_default("Enter GOOGLE_CLIENT_SECRET (Optional)", "GOOGLE_CLIENT_SECRET")
+    github_token = get_input_with_default("Enter GITHUB_PERSONAL_ACCESS_TOKEN (Optional)", "GITHUB_PERSONAL_ACCESS_TOKEN")
     
     env_content = f"""TELEGRAM_BOT_TOKEN="{token}"
 TELEGRAM_ALLOWED_USERS="{allowed}"
