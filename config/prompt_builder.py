@@ -7,6 +7,7 @@ from config.prompts.google_drive import DRIVE_PROMPT
 from config.prompts.github import GITHUB_PROMPT
 from config.prompts.web_search import WEB_SEARCH_PROMPT
 from config.prompts.image_gen import IMAGE_GEN_PROMPT
+from config.prompts.coding import CODING_PROMPT
 
 # Mapping of tool names to their respective prompts
 TOOL_PROMPTS_MAPPING = {
@@ -18,6 +19,15 @@ TOOL_PROMPTS_MAPPING = {
     "DriveTool": DRIVE_PROMPT,
     "WebSearch": WEB_SEARCH_PROMPT,
     "ReadWebpage": WEB_SEARCH_PROMPT,
+    "ListDirectory": CODING_PROMPT,
+    "ReadFile": CODING_PROMPT,
+    "GrepSearch": CODING_PROMPT,
+    "WriteFile": CODING_PROMPT,
+    "ReplaceContent": CODING_PROMPT,
+    "MakeDirectory": CODING_PROMPT,
+    "RemoveFile": CODING_PROMPT,
+    "MoveFile": CODING_PROMPT,
+    "CopyFile": CODING_PROMPT,
 }
 
 def build_system_prompt(current_time, required_tools=None):
