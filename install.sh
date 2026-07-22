@@ -148,11 +148,14 @@ systemctl enable jarvish.service
 systemctl start jarvish.service
 echo "[OK] Service jarvish.service is now running in the background!"
 
-# 9. Setup Global CLI Wrapper
+# 9. Setup Global CLI Wrapper and Binary Permissions
 echo ""
-echo "[INFO] Setting up 'jarvish' Global Command..."
+echo "[INFO] Setting up 'jarvish' Global Command and Binaries..."
 cp "$TARGET_DIR/jarvish.sh" /usr/local/bin/jarvish
 chmod +x /usr/local/bin/jarvish
+if [ -d "$TARGET_DIR/bin" ]; then
+    chmod -R +x "$TARGET_DIR/bin/"
+fi
 echo "[OK] 'jarvish' command is now available everywhere!"
 
 echo ""
