@@ -42,7 +42,7 @@ class InstallSkillTool:
             return "Error: Anda harus menyertakan source_url atau content."
 
         # Menyiapkan path
-        skills_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config", "skills")
+        skills_dir = os.path.expanduser("~/.jarvish/skills")
         skill_path = os.path.join(skills_dir, skill_name)
         skill_file = os.path.join(skill_path, "SKILL.md")
 

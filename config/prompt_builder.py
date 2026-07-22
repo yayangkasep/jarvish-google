@@ -15,18 +15,23 @@ import re
 def load_active_skills(messages):
     if not messages: return ""
     
-    skills_dir = os.path.join(os.path.dirname(__file__), "skills")
-    if not os.path.exists(skills_dir):
-        return ""
+    skills_dirs = [
+        os.path.join(os.path.dirname(__file__), "skills"),
+        os.path.expanduser("~/.jarvish/skills")
+    ]
         
     available_skills = {}
-    for item in os.listdir(skills_dir):
-        item_path = os.path.join(skills_dir, item)
-        if os.path.isdir(item_path):
-            skill_md_path = os.path.join(item_path, "SKILL.md")
-            if os.path.exists(skill_md_path):
-                skill_name = item.lower()
-                available_skills[skill_name] = skill_md_path
+    for skills_dir in skills_dirs:
+        if not os.path.exists(skills_dir):
+            continue
+            
+        for item in os.listdir(skills_dir):
+            item_path = os.path.join(skills_dir, item)
+            if os.path.isdir(item_path):
+                skill_md_path = os.path.join(item_path, "SKILL.md")
+                if os.path.exists(skill_md_path):
+                    skill_name = item.lower()
+                    available_skills[skill_name] = skill_md_path
             
     active_skills_content = []
     activated = set()
