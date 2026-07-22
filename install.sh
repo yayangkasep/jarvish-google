@@ -105,11 +105,11 @@ if command -v docker &>/dev/null; then
     docker pull searxng/searxng:latest
     
     if [ -f "docker-compose.yml" ]; then
-        echo "[INFO] Starting Antigravity Manager via docker-compose..."
+        echo "[INFO] Starting Antigravity Manager and SearXNG via docker-compose..."
         if docker compose version &>/dev/null; then
-            docker compose up -d antigravity-manager
+            docker compose up -d antigravity-manager searxng
         elif command -v docker-compose &>/dev/null; then
-            docker-compose up -d antigravity-manager
+            docker-compose up -d antigravity-manager searxng
         fi
         echo "[OK] Backend services started."
     fi

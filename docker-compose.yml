@@ -12,6 +12,14 @@ services:
     ports:
       - "8045:8045"
     restart: unless-stopped
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    ports:
+      - "8081:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8081/
+    restart: unless-stopped
 
   jarvish-bot:
     build:

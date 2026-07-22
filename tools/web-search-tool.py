@@ -34,7 +34,7 @@ class WebSearchTool:
         try:
             import requests
 
-            url = "http://localhost:8080/search"
+            url = "http://localhost:8081/search"
             headers = {"X-Forwarded-For": "127.0.0.1"}  # Bypass limiter if needed
             params = {"q": Query, "format": "json"}
             res = requests.get(url, params=params, headers=headers, timeout=15)
