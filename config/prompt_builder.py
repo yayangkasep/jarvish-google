@@ -17,7 +17,10 @@ def load_active_skills(messages):
     
     skills_dirs = [
         os.path.join(os.path.dirname(__file__), "skills"),
-        os.path.expanduser("~/.jarvish/skills")
+        os.path.expanduser("~/.jarvish/skills"),
+        os.path.expanduser("~/.antigravity/skills"),
+        os.path.expanduser("~/.claude/skills"),
+        os.path.expanduser("~/.cursor/skills")
     ]
         
     available_skills = {}
