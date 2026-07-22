@@ -8,6 +8,45 @@ from config.prompts.github import GITHUB_PROMPT
 from config.prompts.web_search import WEB_SEARCH_PROMPT
 from config.prompts.image_gen import IMAGE_GEN_PROMPT
 from config.prompts.coding import CODING_PROMPT
+import os
+import re
+
+def load_active_skills(messages):
+    if not messages: return ""
+    
+    skills_dir = os.path.join(os.path.dirname(__file__), "skills")
+    if not os.path.exists(skills_dir):
+        return ""
+        
+    available_skills = {}
+    for filename in os.listdir(skills_dir):
+        if filename.endswith(".md") or filename.endswith(".txt"):
+            skill_name = os.path.splitext(filename)[0].lower()
+            available_skills[skill_name] = os.path.join(skills_dir, filename)
+            
+    active_skills_content = []
+    activated = set()
+    
+    # Check all user messages for @skillname
+    for msg in messages:
+        if msg.get("role") == "user":
+            content = msg.get("content", "")
+            if isinstance(content, list): # handle image payload
+                text_content = " ".join([c.get("text", "") for c in content if c.get("type") == "text"])
+            else:
+                text_content = content
+                
+            # Find words starting with @
+            matches = re.findall(r'@([a-zA-Z0-9_-]+)', text_content.lower())
+            for match in matches:
+                if match in available_skills and match not in activated:
+                    activated.add(match)
+                    with open(available_skills[match], "r", encoding="utf-8") as f:
+                        active_skills_content.append(f"--- SKILL ACTIVATED: {match} ---\n{f.read()}")
+                        
+    if active_skills_content:
+        return "ATURAN TAMBAHAN BERDASARKAN SKILLS YANG DIAKTIFKAN:\n" + "\n\n".join(active_skills_content)
+    return ""
 
 # Mapping of tool names to their respective prompts
 TOOL_PROMPTS_MAPPING = {
@@ -30,7 +69,7 @@ TOOL_PROMPTS_MAPPING = {
     "CopyFile": CODING_PROMPT,
 }
 
-def build_system_prompt(current_time, required_tools=None):
+def build_system_prompt(current_time, required_tools=None, messages=None):
     """
     Builds a dynamic system prompt based on the tools currently available.
     """
@@ -67,7 +106,12 @@ def build_system_prompt(current_time, required_tools=None):
                     prompt_parts.append(GITHUB_PROMPT)
                     added_prompts.add(GITHUB_PROMPT)
                     
-    # 5. Footer & Execution Rules
+    # 5. Inject Skills
+    skills_prompt = load_active_skills(messages)
+    if skills_prompt:
+        prompt_parts.append(skills_prompt)
+        
+    # 6. Footer & Execution Rules
     prompt_parts.append(FOOTER_INSTRUCTION.format(current_time=current_time))
     
     # Join everything with double newlines

@@ -134,7 +134,7 @@ class AiProvider:
 
             SystemPrompt = {
                 "role": "system",
-                "content": build_system_prompt(current_time, RequiredTools),
+                "content": build_system_prompt(current_time, RequiredTools, Messages),
             }
             Payload["messages"] = [SystemPrompt] + Messages
         else:
