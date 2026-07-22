@@ -3,8 +3,9 @@ import json
 
 
 class SessionManager:
-    def __init__(self, data_file="config/sessions.json"):
+    def __init__(self, data_file="data/sessions.json"):
         self.data_file = os.path.join(os.path.dirname(__file__), "..", data_file)
+        os.makedirs(os.path.dirname(self.data_file), exist_ok=True)
         self.sessions = self.LoadSessions()
         # Ensure max 20 messages per session to avoid blowing up context window
         self.MAX_HISTORY = 20

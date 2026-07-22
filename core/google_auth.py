@@ -5,8 +5,9 @@ from google.oauth2.credentials import Credentials
 
 class GoogleAuthManager:
     def __init__(self):
-        self.config_dir = os.path.join(os.path.dirname(__file__), "..", "config")
-        self.token_path = os.path.join(self.config_dir, "token.json")
+        self.data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+        os.makedirs(self.data_dir, exist_ok=True)
+        self.token_path = os.path.join(self.data_dir, "token.json")
         self.scopes = [
             "https://www.googleapis.com/auth/gmail.readonly",
             "https://www.googleapis.com/auth/gmail.send",

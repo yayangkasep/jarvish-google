@@ -51,20 +51,6 @@ def configure_antigravity():
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format: {e}")
 
-def configure_credentials():
-    content = prompt_multiline("--- Configuring config/credentials.json (Google Cloud) ---")
-    if not content:
-        print("Skipped.")
-        return
-    try:
-        data = json.loads(content)
-        os.makedirs('config', exist_ok=True)
-        with open("config/credentials.json", "w") as f:
-            json.dump(data, f, indent=4)
-        print("✅ config/credentials.json saved successfully!")
-    except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON format: {e}")
-
 def main():
     if len(sys.argv) < 2:
         print("Usage: python cli.py configure")
@@ -77,7 +63,6 @@ def main():
         print("=============================================")
         configure_env()
         configure_antigravity()
-        configure_credentials()
         print("\n🎉 Configuration Complete! Please run 'jarvish restart' to apply changes.")
     else:
         print(f"Unknown command: {cmd}")

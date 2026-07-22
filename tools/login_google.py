@@ -24,18 +24,30 @@ def main():
     """Shows basic usage of the Gmail API.
     Logs the user in and saves the token.json file.
     """
-    creds = None
-    config_dir = os.path.join(os.path.dirname(__file__), "..", "config")
-    token_path = os.path.join(config_dir, "token.json")
-    credentials_path = os.path.join(config_dir, "credentials.json")
-
-    # Check if credentials.json exists
-    if not os.path.exists(credentials_path):
-        print(f"Error: Could not find {credentials_path}")
-        print(
-            "Please ensure you renamed your client_secret_*.json to config/credentials.json"
-        )
+    import dotenv
+    dotenv.load_dotenv()
+    
+    data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+    os.makedirs(data_dir, exist_ok=True)
+    token_path = os.path.join(data_dir, "token.json")
+    
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    
+    if not client_id or not client_secret:
+        print("Error: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set in .env")
         return
+
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "project_id": "jarvish-google",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret": client_secret
+        }
+    }
 
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first time.
@@ -49,7 +61,7 @@ def main():
             creds.refresh(Request())
         else:
             print("No valid token found. Please visit the URL below to authorize:")
-            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+            flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
             # Run local server on port 8080 (must match what's allowed in Google Console)
             creds = flow.run_local_server(port=8080, open_browser=False)
 

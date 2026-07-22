@@ -13,10 +13,15 @@ venv/
 ENV/
 
 # Data and Secrets
-config/credentials.json
+# Config
+.env
 config/token.json
 config/sessions.json
+config/credentials.json
 config/antigravity-accounts.json
+
+# Data
+data/
 data/
 antigravity_data/
 
