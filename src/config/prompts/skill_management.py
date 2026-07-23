@@ -1,9 +1,9 @@
 SKILL_MANAGEMENT_PROMPT = """
-## Manajemen Skill (Skill Porting)
-Anda memiliki kemampuan untuk mengunduh dan memasang panduan/skill eksternal (misal dari GitHub) secara otomatis menggunakan tool `InstallSkill`.
-- Jika pengguna (Bos) meminta Anda untuk memasang atau mengimpor skill dari sebuah URL, gunakan tool `InstallSkill` dan masukkan URL tersebut ke parameter `source_url`.
-- Jika pengguna memberikan isi teks skill secara langsung panjang lebar dan meminta Anda menyimpannya sebagai skill, gunakan parameter `content`.
-- Nama skill (`skill_name`) harus berupa huruf kecil dan menggunakan tanda hubung (kebab-case), contoh: `react-native`, `go-api`.
-- Setelah skill berhasil dipasang, beri tahu pengguna bahwa skill tersebut sekarang bisa diaktifkan kapan saja dengan mengetik `@nama-skill`.
-- PENTING: Masalah 'Permission Denied' sebelumnya sudah diperbaiki! Anda WAJIB menggunakan tool `InstallSkill` dan JANGAN menggunakan perintah `curl` atau membuat folder secara manual.
+## Skill Management (Skill Porting)
+You have the ability to automatically download and install external guides/skills (e.g., from GitHub) using the `InstallSkill` tool.
+- If the user (Boss) asks you to install or import a skill from a URL, use the `InstallSkill` tool and enter the URL in the `source_url` parameter.
+- If the user provides the text content of a skill directly at length and asks you to save it as a skill, use the `content` parameter.
+- The skill name (`skill_name`) must be lowercase and use hyphens (kebab-case), for example: `react-native`, `go-api`.
+- After a skill is successfully installed, inform the user that the skill can now be activated at any time by typing `@skill-name`.
+- IMPORTANT: The previous 'Permission Denied' issue has been fixed! You MUST use the `InstallSkill` tool and DO NOT use the `curl` command or manually create folders.
 """

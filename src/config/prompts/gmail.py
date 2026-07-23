@@ -1,4 +1,4 @@
-GMAIL_READ_PROMPT = """Contoh membaca email:
+GMAIL_READ_PROMPT = """Example for reading emails:
 ```json
 {
   "tool_call": {
@@ -8,12 +8,12 @@ GMAIL_READ_PROMPT = """Contoh membaca email:
 }
 ```"""
 
-GMAIL_SEND_PROMPT = """Contoh mengirim email:
+GMAIL_SEND_PROMPT = """Example for sending emails:
 ```json
 {
   "tool_call": {
     "name": "SendEmail",
-    "arguments": {"to": "email@tujuan.com", "subject": "Subjek", "body": "Isi"}
+    "arguments": {"to": "target@email.com", "subject": "Subject", "body": "Content"}
   }
 }
 ```"""

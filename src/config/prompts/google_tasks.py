@@ -1,4 +1,4 @@
-TASKS_PROMPT = """Contoh mengelola tugas (Google Tasks):
+TASKS_PROMPT = """Example of managing tasks (Google Tasks):
 ```json
 {
   "tool_call": {

@@ -1,4 +1,4 @@
-CALENDAR_PROMPT = """Contoh mengelola kalender (melihat jadwal):
+CALENDAR_PROMPT = """Example of managing the calendar (viewing schedule):
 ```json
 {
   "tool_call": {
