@@ -5,7 +5,7 @@ import requests
 import time
 
 # Import BaseConnector with dashed name
-base_connector_mod = importlib.import_module("jarvis.connectors.base-connector")
+base_connector_mod = importlib.import_module("connectors.base-connector")
 BaseConnector = base_connector_mod.BaseConnector
 
 

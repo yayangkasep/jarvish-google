@@ -6,7 +6,7 @@ import json
 import importlib
 from config import paths
 
-app_settings_mod = importlib.import_module("jarvis.config.app-settings")
+app_settings_mod = importlib.import_module("config.app-settings")
 
 
 class AiProvider:
