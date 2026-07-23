@@ -138,9 +138,30 @@ def restart_system():
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to restart service: {e}")
 
+def auth_google():
+    print("=============================================")
+    print("     Google OAuth Authentication Wizard      ")
+    print("=============================================")
+    try:
+        from tools import login_google
+        login_google.main()
+    except Exception as e:
+        print(f"❌ Failed to launch Google Auth: {e}")
+
+def print_help():
+    print("Usage: jarvish [command]")
+    print("\nCommands:")
+    print("  configure     - Setup API keys and environment variables")
+    print("  upgrade       - Pull latest code and upgrade the system")
+    print("  auth-google   - Authenticate with Google (Calendar/Gmail) via OAuth")
+    print("  restart       - Restart the J.A.R.V.I.S background service")
+    print("  status        - Check if J.A.R.V.I.S service is running")
+    print("  logs          - View live logs of J.A.R.V.I.S")
+    print("  help          - Show this help message")
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: jarvish configure | upgrade | restart | status | logs")
+        print_help()
         sys.exit(1)
         
     cmd = sys.argv[1]
@@ -159,8 +180,13 @@ def main():
         status_system()
     elif cmd in ("logs", "log"):
         logs_system()
+    elif cmd == "auth-google":
+        auth_google()
+    elif cmd in ("help", "--help", "-h"):
+        print_help()
     else:
         print(f"Unknown command: {cmd}")
+        print("Run 'jarvish help' to see available commands.")
 
 if __name__ == "__main__":
     main()
