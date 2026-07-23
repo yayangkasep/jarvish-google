@@ -13,11 +13,11 @@ agent_orchestrator_mod = importlib.import_module("core.agent-orchestrator")
 from tools.memory_tool import MemoryTool
 
 try:
-    import edge_tts
-    import asyncio
+    from elevenlabs.client import ElevenLabs
     from pydub import AudioSegment
+    import os
 except ImportError:
-    edge_tts = None
+    ElevenLabs = None
     AudioSegment = None
 
 def strip_markdown_for_tts(text):
@@ -42,8 +42,13 @@ def strip_markdown_for_tts(text):
     return text.strip()
 
 def send_voice_note(connector, user_id, text):
-    if not edge_tts or not AudioSegment:
+    if not ElevenLabs or not AudioSegment:
         print("TTS packages not installed. Skipping voice note.")
+        return
+        
+    api_key = os.getenv("ELEVENLABS_API_KEY")
+    if not api_key:
+        print("ELEVENLABS_API_KEY not found in environment. Skipping voice note.")
         return
         
     clean_text = strip_markdown_for_tts(text)
@@ -56,14 +61,23 @@ def send_voice_note(connector, user_id, text):
         
     try:
         import tempfile
+        client = ElevenLabs(api_key=api_key)
         
         with tempfile.TemporaryDirectory() as tmpdir:
             mp3_path = os.path.join(tmpdir, "voice.mp3")
             ogg_path = os.path.join(tmpdir, "voice.ogg")
             
-            # Generate speech asynchronously using Edge TTS (Ardi - Male Indonesian)
-            communicate = edge_tts.Communicate(clean_text, "id-ID-ArdiNeural", rate="+15%")
-            asyncio.run(communicate.save(mp3_path))
+            # Generate speech using ElevenLabs (JBFqnCBsd6RMkjVDRZzb)
+            audio_generator = client.text_to_speech.convert(
+                text=clean_text,
+                voice_id="JBFqnCBsd6RMkjVDRZzb",
+                model_id="eleven_multilingual_v2",
+                output_format="mp3_44100_128",
+            )
+            
+            with open(mp3_path, "wb") as f:
+                for chunk in audio_generator:
+                    f.write(chunk)
             
             # Convert to OGG OPUS
             audio = AudioSegment.from_mp3(mp3_path)

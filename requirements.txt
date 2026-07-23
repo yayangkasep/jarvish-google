@@ -7,6 +7,6 @@ google-genai==0.2.1
 ruff
 beautifulsoup4
 mcp
-edge-tts==6.1.13
+elevenlabs==1.30.2
 pydub==0.25.1
 SpeechRecognition==3.10.4
