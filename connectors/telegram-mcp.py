@@ -198,6 +198,33 @@ class TelegramMcp(BaseConnector):
             print(f"[{self.PlatformType}] Send photo error: {e}")
             return False
 
+    def SendVoice(self, TargetId, VoiceFilePath, Caption=""):
+        if not self.IsConnected:
+            print("Cannot send voice: Not connected to Telegram.")
+            return False
+
+        if not os.path.exists(VoiceFilePath):
+            print(f"[{self.PlatformType}] Voice file not found: {VoiceFilePath}")
+            return False
+
+        try:
+            print(f"[{self.PlatformType}] Sending voice to {TargetId}...")
+            with open(VoiceFilePath, 'rb') as f:
+                res = requests.post(
+                    f"{self.ApiUrl}/sendVoice",
+                    data={"chat_id": TargetId, "caption": Caption},
+                    files={"voice": f},
+                    timeout=30,
+                )
+            if res.status_code == 200:
+                return True
+            else:
+                print(f"[{self.PlatformType}] Failed to send voice: {res.text}")
+                return False
+        except Exception as e:
+            print(f"[{self.PlatformType}] Send voice error: {e}")
+            return False
+
     def EditMessage(self, TargetId, MessageId, NewText):
         if not self.IsConnected:
             print("Cannot edit message: Not connected to Telegram.")

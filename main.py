@@ -12,6 +12,66 @@ telegram_mcp_mod = importlib.import_module("connectors.telegram-mcp")
 agent_orchestrator_mod = importlib.import_module("core.agent-orchestrator")
 from tools.memory_tool import MemoryTool
 
+try:
+    from gtts import gTTS
+    from pydub import AudioSegment
+except ImportError:
+    gTTS = None
+    AudioSegment = None
+
+def strip_markdown_for_tts(text):
+    import re
+    # Remove code blocks
+    text = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
+    # Remove inline code
+    text = re.sub(r'`.*?`', '', text)
+    # Remove bold/italic/strikethrough markers
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+    text = re.sub(r'\*(.*?)\*', r'\1', text)
+    text = re.sub(r'_(.*?)_', r'\1', text)
+    text = re.sub(r'~~(.*?)~~', r'\1', text)
+    # Remove URLs
+    text = re.sub(r'http[s]?://\S+', '', text)
+    # Remove image tags
+    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
+    # Remove links
+    text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)
+    # Remove HTML tags
+    text = re.sub(r'<.*?>', '', text)
+    return text.strip()
+
+def send_voice_note(connector, user_id, text):
+    if not gTTS or not AudioSegment:
+        print("TTS packages not installed. Skipping voice note.")
+        return
+        
+    clean_text = strip_markdown_for_tts(text)
+    if not clean_text or len(clean_text) < 2:
+        return
+        
+    # Limit voice length to prevent extremely long generation
+    if len(clean_text) > 800:
+        clean_text = clean_text[:800] + "... dan seterusnya."
+        
+    try:
+        import tempfile
+        tts = gTTS(text=clean_text, lang='id')
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            mp3_path = os.path.join(tmpdir, "voice.mp3")
+            ogg_path = os.path.join(tmpdir, "voice.ogg")
+            
+            tts.save(mp3_path)
+            
+            # Convert to OGG OPUS
+            audio = AudioSegment.from_mp3(mp3_path)
+            audio.export(ogg_path, format="ogg", codec="libopus")
+            
+            # Send to Telegram
+            connector.SendVoice(user_id, ogg_path)
+    except Exception as e:
+        print(f"Error generating/sending voice note: {e}")
+
 AiProvider = ai_provider_mod.AiProvider
 SessionManager = session_manager_mod.SessionManager
 ToolRegistry = tool_registry_mod.ToolRegistry
@@ -147,6 +207,9 @@ def main():
                     Response = Response.replace(f"![{caption}]({url})", "").strip()
 
             send_long_message(TelegramConnector, user_id, Response, msg_id)
+            
+            # Send voice note in background/subsequent to the text message
+            send_voice_note(TelegramConnector, user_id, Response)
 
         except Exception as e:
             print(f"Error processing prompt: {e}")

@@ -7,3 +7,5 @@ google-genai==0.2.1
 ruff
 beautifulsoup4
 mcp
+gTTS==2.5.1
+pydub==0.25.1
