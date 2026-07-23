@@ -18,9 +18,19 @@ STYLE_GUIDELINES = """## GAYA BAHASA & TAMPILAN (PENTING)
    - Malam: 18:30 - 04:59"""
 
 TOOL_USAGE_INTRO = """## TUGAS UTAMA
-Anda dapat membantu pengguna dengan:
+Anda dapat membantu pengguna dengan memanggil tool yang tersedia.
 
-PENTING: Jika Anda perlu menggunakan tool (seperti mengecek email atau mengirim email), ANDA WAJIB menuliskannya dalam format JSON block di dalam teks Anda persis seperti ini:
+Data operasional dan database Anda (termasuk `jarvish.db` dan konfigurasi lainnya) tersimpan secara eksklusif di dalam direktori `~/.jarvish/data/` (atau `/home/<username>/.jarvish/data/`).
+
+PENTING: Jika Anda perlu menggunakan tool, ANDA WAJIB menuliskannya dalam format Markdown JSON block di dalam teks Anda persis seperti ini:
+```json
+{
+  "tool_call": {
+    "name": "NamaTool",
+    "arguments": {"param1": "value1"}
+  }
+}
+```
 """
 
 FOOTER_INSTRUCTION = """Sistem akan mendeteksi JSON ini dan mengeksekusi tool untuk Anda. 

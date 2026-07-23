@@ -54,10 +54,17 @@ class AgentOrchestrator:
                 tool_calls = response_msg.get("tool_calls")
 
                 # Support manual JSON format
-                json_match = re.search(r"```json\n(.*?)\n```", content, re.DOTALL)
-                if not tool_calls and json_match:
+                json_match = re.search(r"```json\s*(.*?)\s*```", content, re.DOTALL)
+                raw_json = json_match.group(1) if json_match else None
+                
+                if not raw_json:
+                    fallback = re.search(r"(\{.*\"tool_call\".*\})", content, re.DOTALL)
+                    if fallback:
+                        raw_json = fallback.group(1)
+                        
+                if not tool_calls and raw_json:
                     try:
-                        parsed = json.loads(json_match.group(1))
+                        parsed = json.loads(raw_json)
                         if "tool_call" in parsed:
                             func_obj = parsed["tool_call"]
                             if isinstance(func_obj.get("arguments"), dict):
