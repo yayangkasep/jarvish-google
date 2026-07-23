@@ -7,16 +7,16 @@ echo ""
 
 # 1. Require Sudo
 if [ "$EUID" -ne 0 ]; then
-  echo "[INFO] Skrip ini membutuhkan hak akses root (sudo)."
-  echo "Sistem akan meminta password Anda sekarang..."
+  echo "[INFO] This script requires root (sudo) privileges."
+  echo "The system will prompt for your password now..."
   
-  # Jika script dijalankan dari file lokal, jalankan ulang dirinya sendiri dengan sudo
+  # If executed from a local file, re-run with sudo
   if [ -f "$0" ]; then
       exec sudo bash "$0" "$@"
   else
-      # Jika script dijalankan dari curl/piping, kita hentikan agar user menjalankannya ulang
-      echo "[ERROR] Anda menjalankan skrip dari curl tanpa sudo."
-      echo "Jalankan ulang dengan perintah: curl -sSL <URL> | sudo bash"
+      # If executed via curl/piping, abort and instruct the user
+      echo "[ERROR] You are running this script from curl without sudo."
+      echo "Please run it as: curl -sSL <URL> | sudo bash"
       exit 1
   fi
 fi
@@ -36,11 +36,11 @@ VENV_DIR="$TARGET_DIR/venv"
 REPO_URL="https://github.com/yayangkasep/jarvish.git"
 
 # 2. Check and Install Basic Dependencies
-echo "[INFO] Memeriksa paket-paket sistem yang diperlukan..."
+echo "[INFO] Checking required system packages..."
 sudo apt-get update -yqq >/dev/null 2>&1
 for pkg in python3 python3-pip git curl; do
     if ! command -v $pkg &>/dev/null; then
-        echo "[INFO] Menginstal $pkg secara otomatis..."
+        echo "[INFO] Installing $pkg automatically..."
         sudo apt-get install -y $pkg >/dev/null 2>&1
     fi
 done
@@ -75,22 +75,22 @@ sudo -u "$REAL_USER" "$UV_BIN" pip install . --python "$VENV_DIR"
 
 # 6. Install Backend Services (Docker Images)
 echo ""
-echo "[INFO] Memeriksa instalasi Docker..."
+echo "[INFO] Checking Docker installation..."
 if ! command -v docker &>/dev/null; then
-    echo "[INFO] Docker tidak ditemukan! Memulai instalasi otomatis Docker Engine..."
+    echo "[INFO] Docker not found! Starting automatic installation of Docker Engine..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh >/dev/null 2>&1
     rm -f get-docker.sh
     
-    echo "[INFO] Mendaftarkan user '$REAL_USER' ke dalam grup docker..."
+    echo "[INFO] Adding user '$REAL_USER' to the docker group..."
     sudo usermod -aG docker "$REAL_USER"
     
     # Enable and start docker service
     sudo systemctl enable docker
     sudo systemctl start docker
-    echo "[OK] Docker berhasil diinstal!"
+    echo "[OK] Docker installed successfully!"
 else
-    echo "[OK] Docker sudah terinstal."
+    echo "[OK] Docker is already installed."
 fi
 
 echo "[INFO] Setting up Backend Docker Services..."
