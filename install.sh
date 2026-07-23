@@ -56,13 +56,20 @@ echo "[INFO] Ensuring 'uv' is installed for fast environment building..."
 if ! sudo -u "$REAL_USER" command -v uv &>/dev/null; then
     echo "[INFO] Installing uv..."
     sudo -u "$REAL_USER" curl -LsSf https://astral.sh/uv/install.sh | sudo -u "$REAL_USER" sh
-    export PATH="$REAL_HOME_DIR/.cargo/bin:$PATH"
 fi
 
-# Use uv from cargo bin if it's not in PATH globally yet
-UV_BIN="$REAL_HOME_DIR/.cargo/bin/uv"
+# Locate uv binary
+UV_BIN="$REAL_HOME_DIR/.local/bin/uv"
 if [ ! -f "$UV_BIN" ]; then
-    UV_BIN=$(sudo -u "$REAL_USER" which uv)
+    UV_BIN="$REAL_HOME_DIR/.cargo/bin/uv"
+fi
+if [ ! -f "$UV_BIN" ]; then
+    UV_BIN=$(sudo -u "$REAL_USER" which uv || true)
+fi
+
+if [ -z "$UV_BIN" ] || [ ! -f "$UV_BIN" ]; then
+    echo "[ERROR] uv installation failed or binary not found!"
+    exit 1
 fi
 
 # 5. Create Virtual Environment and Install Package
@@ -99,11 +106,14 @@ sudo docker pull lbjlaq/antigravity-manager:latest
 sudo docker pull searxng/searxng:latest
 
 if [ -f "docker-compose.yml" ]; then
+    echo "[INFO] Preparing .env file for Docker Services..."
+    sudo -u "$REAL_USER" touch "$TARGET_DIR/.env"
+    
     echo "[INFO] Starting Antigravity Manager and SearXNG via docker-compose..."
     if sudo docker compose version &>/dev/null; then
-        sudo docker compose up -d antigravity-manager searxng
+        sudo HOME="$REAL_HOME_DIR" docker compose up -d antigravity-manager searxng
     elif command -v docker-compose &>/dev/null; then
-        sudo docker-compose up -d antigravity-manager searxng
+        sudo HOME="$REAL_HOME_DIR" docker-compose up -d antigravity-manager searxng
     fi
     echo "[OK] Backend services started."
 fi
