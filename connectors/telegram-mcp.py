@@ -84,6 +84,7 @@ class TelegramMcp(BaseConnector):
 
                         document = message.get("document")
                         photo = message.get("photo")
+                        voice = message.get("voice")
                         image_base64 = None
 
                         if document:
@@ -107,6 +108,13 @@ class TelegramMcp(BaseConnector):
                                 text = caption
                             print(f"[{self.PlatformType}] Received photo.")
                             image_base64 = self._download_and_encode_photo(file_id)
+                        elif voice:
+                            file_id = voice.get("file_id")
+                            print(f"[{self.PlatformType}] Received voice note.")
+                            transcribed_text = self._download_and_transcribe_voice(file_id)
+                            if transcribed_text:
+                                text = transcribed_text
+                                print(f"[{self.PlatformType}] Transcribed voice: {text}")
 
                         if user_id and (text or image_base64):
                             # Policy enforcement check
@@ -305,6 +313,55 @@ class TelegramMcp(BaseConnector):
         except Exception as e:
             print(f"[{self.PlatformType}] Photo extraction error: {e}")
         return None
+
+    def _download_and_transcribe_voice(self, file_id):
+        try:
+            res = requests.get(
+                f"{self.ApiUrl}/getFile", params={"file_id": file_id}, timeout=10
+            )
+            if res.status_code == 200:
+                file_path = res.json().get("result", {}).get("file_path")
+                if not file_path:
+                    return "[Error: Unable to get voice file path from Telegram]"
+
+                download_url = (
+                    f"https://api.telegram.org/file/bot{self.Token}/{file_path}"
+                )
+                file_res = requests.get(download_url, timeout=30)
+                if file_res.status_code == 200:
+                    import tempfile
+                    import speech_recognition as sr
+                    from pydub import AudioSegment
+
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        ogg_path = os.path.join(tmpdir, "voice.ogg")
+                        wav_path = os.path.join(tmpdir, "voice.wav")
+                        
+                        with open(ogg_path, "wb") as f:
+                            f.write(file_res.content)
+                            
+                        # Convert to wav for speech_recognition
+                        audio = AudioSegment.from_file(ogg_path, format="ogg")
+                        audio.export(wav_path, format="wav")
+                        
+                        # Transcribe using Google Web Speech API
+                        recognizer = sr.Recognizer()
+                        with sr.AudioFile(wav_path) as source:
+                            audio_data = recognizer.record(source)
+                            try:
+                                text = recognizer.recognize_google(audio_data, language="id-ID")
+                                return text
+                            except sr.UnknownValueError:
+                                return "[Error: Suara tidak terdengar jelas atau sistem tidak dapat memahaminya]"
+                            except sr.RequestError as e:
+                                return f"[Error: Gagal menghubungi layanan pengenal suara: {e}]"
+                else:
+                    return f"[Error: Failed to download voice file, status {file_res.status_code}]"
+            else:
+                return f"[Error: Failed to get voice file info, status {res.status_code}]"
+        except Exception as e:
+            print(f"[{self.PlatformType}] Voice transcription error: {e}")
+            return f"[Error processing voice note: {e}]"
 
     def ReceiveMessage(self, Payload):
         # Deprecated: Using StartPolling instead

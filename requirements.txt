@@ -9,3 +9,4 @@ beautifulsoup4
 mcp
 gTTS==2.5.1
 pydub==0.25.1
+SpeechRecognition==3.10.4
