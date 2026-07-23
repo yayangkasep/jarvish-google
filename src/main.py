@@ -127,7 +127,7 @@ def main():
 
     # 0. Load Configuration
     Settings = AppSettings()
-    print(f"Environment: {Settings.EnvironmentMode}")
+    print(f"Server is running!")
     print(f"Telegram Token Loaded: {'Yes' if Settings.GetTelegramToken() else 'No'}")
 
     # 1. Initialize Connectors

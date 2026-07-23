@@ -11,7 +11,6 @@ class AppSettings:
 
         self.TelegramBotToken = os.getenv("TELEGRAM_BOT_TOKEN", "")
         self.TelegramAllowedUsers = os.getenv("TELEGRAM_ALLOWED_USERS", "*")
-        self.EnvironmentMode = os.getenv("ENVIRONMENT_MODE", "development")
         self.GoogleClientId = os.getenv("GOOGLE_CLIENT_ID", "")
         self.GoogleClientSecret = os.getenv("GOOGLE_CLIENT_SECRET", "")
 

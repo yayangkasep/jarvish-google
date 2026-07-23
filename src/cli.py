@@ -44,7 +44,6 @@ def configure_env():
     
     env_content = f"""TELEGRAM_BOT_TOKEN="{token}"
 TELEGRAM_ALLOWED_USERS="{allowed}"
-ENVIRONMENT_MODE="production"
 GOOGLE_CLIENT_ID="{google_id}"
 GOOGLE_CLIENT_SECRET="{google_secret}"
 ANTIGRAVITY_ENDPOINT="http://localhost:8045/v1/chat/completions"
