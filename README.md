@@ -1,73 +1,83 @@
 # J.A.R.V.I.S Google Bot
 
-Asisten Telegram cerdas berbasis AI dengan integrasi Google Workspace (Calendar, Tasks, Gmail, Drive) dan kemampuan terminal.
+Asisten cerdas berbasis AI dengan integrasi Google Workspace (Calendar, Tasks, Gmail, Drive), penglihatan mesin (Vision), dan kemampuan terminal interaktif.
 
-## 🚀 Instalasi Cepat di VPS/Server (One-Liner)
+## 🏗 Arsitektur Bersih (Clean Architecture)
 
-Gunakan perintah `curl` berikut di terminal server Linux Anda (Ubuntu/Debian) untuk menginstal J.A.R.V.I.S secara otomatis ke direktori `/opt/jarvish-google/` dan mendaftarkannya sebagai *Background Service* (`systemd`).
+Proyek ini menggunakan arsitektur tersentralisasi di mana **semua state, rahasia, dan virtual environment** secara eksklusif dikelola di dalam direktori profil Linux Anda.
+- **`~/.jarvish/venv/`** — Tempat instalasi *virtual environment* ultra-cepat menggunakan `uv`.
+- **`~/.jarvish/data/`** — Tempat penyimpanan memori AI (SQLite), riwayat obrolan, dan token OAuth Google.
+- **`~/.jarvish/.env`** — File konfigurasi rahasia (Token Telegram, Kunci API, dll.) yang 100% aman dan tidak akan pernah ter-*commit* ke Git.
 
-```bash
-curl -sSL https://raw.githubusercontent.com/yayangkasep/jarvish-google/master/install.sh | sudo bash
-```
+Hanya satu tautan perintah global (`jarvish`) yang diizinkan keluar menuju `/usr/local/bin/jarvish`, memastikan sistem VPS Anda tetap perawan dan tidak tercemar oleh pustaka acak.
 
-> **Perhatian:**
-> 1. Pastikan server sudah terinstal `python3`, `python3-venv`, `python3-pip`, dan `git`.
-> 2. Skrip ini akan secara otomatis melakukan kloning (*download*) repositori ini langsung ke *server* Anda tanpa meminta *password*.
+---
 
-## 📁 Apa yang dilakukan Installer?
+## 🚀 Instalasi Cepat di VPS/Server (Linux)
 
-1. **Membuat Folder:** Menyiapkan tempat khusus di `/opt/jarvish-google/`.
-2. **Kloning Repo:** Menarik kode sumber versi terbaru dari GitHub secara otomatis.
-3. **Environment:** Membuat *Virtual Environment* Python (`.venv`) dan menginstal seluruh pustaka (`requirements.txt`).
-4. **Backend (Docker):** Mengunduh *image* `antigravity-manager` dan `searxng`, lalu menyalakannya (jika server memiliki Docker).
-5. **Systemd Service:** Mengonfigurasi `jarvish.service` sehingga bot otomatis berjalan di latar belakang dan *auto-restart* jika server mati.
+Untuk menginstal J.A.R.V.I.S dan mendaftarkannya sebagai *Background Service* otomatis di Linux (Ubuntu/Debian):
 
-## ⚙️ Perintah Operasional
+1. **Clone repositori ini:**
+   ```bash
+   git clone https://github.com/yayangkasep/jarvish.git
+   cd jarvish
+   ```
 
-Setelah J.A.R.V.I.S terinstal, Anda bisa mengelolanya dengan perintah *systemd* standar:
+2. **Jalankan Instalator Otomatis:**
+   ```bash
+   sudo bash install.sh
+   ```
 
-- **Cek Status Bot:** 
-  `sudo systemctl status jarvish`
-- **Melihat Log Obrolan/Error secara Real-time:** 
-  `sudo journalctl -u jarvish -f`
-- **Merestart Bot:** 
-  `sudo systemctl restart jarvish`
-- **Menghentikan Bot:** 
-  `sudo systemctl stop jarvish`
+*Skrip ini akan menginstal `uv`, membuat environment, menautkan perintah global, dan menyalakan servis `jarvish.service`.*
+
+---
+
+## ⚙️ Perintah Operasional (CLI)
+
+Setelah diinstal, Anda dapat mengelola J.A.R.V.I.S dari mana saja di terminal Anda menggunakan perintah global `jarvish`:
+
+- **Konfigurasi Token (Telegram, API Z.ai, dsb):**
+  ```bash
+  jarvish configure
+  ```
+- **Memperbarui Kode dari GitHub & Restart Otomatis:**
+  *(Jika ada rilis fitur baru, cukup ketik ini)*
+  ```bash
+  jarvish upgrade
+  ```
+- **Mengecek Status AI (Service):**
+  ```bash
+  sudo systemctl status jarvish.service
+  ```
+- **Melihat Log Percakapan secara Real-time:**
+  ```bash
+  sudo journalctl -u jarvish.service -f
+  ```
+
+---
 
 ## 💻 Instalasi Manual (Windows / Local)
 
-Jika Anda ingin menjalankan J.A.R.V.I.S secara manual di komputer lokal (misalnya di Windows), ikuti langkah-langkah berikut:
+Jika Anda ingin ikut mengembangkan proyek ini di Windows:
 
-1. **Clone Repositori:**
+1. **Clone Repositori & Masuk ke Folder:**
    ```powershell
-   git clone https://github.com/yayangkasep/jarvish-google.git
+   git clone https://github.com/yayangkasep/jarvish.git
    cd jarvish-google
    ```
 
-2. **Buat Virtual Environment:**
-   Pastikan Anda sudah menginstal Python (disarankan versi 3.10+).
+2. **Gunakan `uv` untuk Sinkronisasi Cepat (Direkomendasikan):**
    ```powershell
-   python -m venv .venv
+   uv venv
+   uv pip install -e .
    ```
 
-3. **Aktifkan Virtual Environment:**
-   Ini adalah langkah yang paling penting. Anda harus mengaktifkan *environment* sebelum menginstal modul.
+3. **Jalankan Bot secara Manual:**
    ```powershell
-   # Untuk Windows PowerShell:
-   .\.venv\Scripts\Activate.ps1
+   # Melalui CLI entry point:
+   jarvish-server
    
-   # Untuk Windows Command Prompt (CMD):
-   .\.venv\Scripts\activate.bat
+   # Atau langsung menggunakan Python:
+   python src/main.py
    ```
-   *(Jika berhasil, akan ada tulisan `(.venv)` di sebelah kiri input terminal Anda).*
-
-4. **Instal Modul / Dependencies:**
-   ```powershell
-   pip install -r requirements.txt
-   ```
-
-5. **Jalankan J.A.R.V.I.S:**
-   ```powershell
-   python main.py
-   ```
+*(Semua data lokal di Windows Anda akan aman tersimpan di `C:\Users\NamaUser\.jarvish\`)*
