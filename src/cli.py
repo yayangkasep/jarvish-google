@@ -40,6 +40,7 @@ def configure_env():
     google_id = get_input_with_default("Enter GOOGLE_CLIENT_ID (Optional)", "GOOGLE_CLIENT_ID")
     google_secret = get_input_with_default("Enter GOOGLE_CLIENT_SECRET (Optional)", "GOOGLE_CLIENT_SECRET")
     github_token = get_input_with_default("Enter GITHUB_PERSONAL_ACCESS_TOKEN (Optional)", "GITHUB_PERSONAL_ACCESS_TOKEN")
+    searxng_secret = get_input_with_default("Enter SEARXNG_SECRET (Required for Search Engine Security)", "SEARXNG_SECRET")
     
     env_content = f"""TELEGRAM_BOT_TOKEN="{token}"
 TELEGRAM_ALLOWED_USERS="{allowed}"
@@ -48,6 +49,7 @@ GOOGLE_CLIENT_ID="{google_id}"
 GOOGLE_CLIENT_SECRET="{google_secret}"
 ANTIGRAVITY_ENDPOINT="http://localhost:8045/v1/chat/completions"
 GITHUB_PERSONAL_ACCESS_TOKEN="{github_token}"
+SEARXNG_SECRET="{searxng_secret}"
 """
     with open(env_file, "w") as f:
         f.write(env_content)
