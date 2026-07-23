@@ -167,7 +167,7 @@ def main():
     Orchestrator = AgentOrchestrator(Provider, Sessions, Registry, memory_manager)
 
     # 4. Message Handler for Telegram
-    def handle_incoming_message(user_id, text, image_base64=None):
+    def handle_incoming_message(user_id, text, image_base64=None, is_voice=False):
         if text and text.startswith("/start"):
             TelegramConnector.SendMessage(
                 user_id,
@@ -206,10 +206,14 @@ def main():
                     TelegramConnector.SendPhoto(user_id, url, caption)
                     Response = Response.replace(f"![{caption}]({url})", "").strip()
 
-            send_long_message(TelegramConnector, user_id, Response, msg_id)
-            
-            # Send voice note in background/subsequent to the text message
-            send_voice_note(TelegramConnector, user_id, Response)
+            if is_voice:
+                # If user used voice, only reply with voice note and delete the "Thinking..." text
+                send_voice_note(TelegramConnector, user_id, Response)
+                if msg_id:
+                    TelegramConnector.DeleteMessage(user_id, msg_id)
+            else:
+                # If user used text, only reply with text
+                send_long_message(TelegramConnector, user_id, Response, msg_id)
 
         except Exception as e:
             print(f"Error processing prompt: {e}")

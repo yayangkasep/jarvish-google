@@ -128,7 +128,7 @@ class TelegramMcp(BaseConnector):
                                 )
                                 # Execute the callback in a safe manner
                                 try:
-                                    callback(user_id, text, image_base64)
+                                    callback(user_id, text, image_base64, bool(voice))
                                 except Exception as e:
                                     print(
                                         f"[{self.PlatformType}] Error in message callback: {e}"
@@ -254,6 +254,19 @@ class TelegramMcp(BaseConnector):
                 return False
         except Exception as e:
             print(f"[{self.PlatformType}] Edit message error: {e}")
+            return False
+
+    def DeleteMessage(self, TargetId, MessageId):
+        if not self.IsConnected:
+            return False
+        try:
+            res = requests.post(
+                f"{self.ApiUrl}/deleteMessage",
+                json={"chat_id": TargetId, "message_id": MessageId},
+                timeout=10,
+            )
+            return res.status_code == 200
+        except Exception:
             return False
 
     def _download_and_extract_document(self, file_id, file_name):
