@@ -35,11 +35,15 @@ CURRENT_DIR=$(pwd)
 VENV_DIR="$TARGET_DIR/venv"
 REPO_URL="https://github.com/yayangkasep/jarvish.git"
 
-# 2. Check if python3 is installed
-if ! command -v python3 &>/dev/null; then
-    echo "[ERROR] Python 3 is not installed!"
-    exit 1
-fi
+# 2. Check and Install Basic Dependencies
+echo "[INFO] Memeriksa paket-paket sistem yang diperlukan..."
+sudo apt-get update -yqq >/dev/null 2>&1
+for pkg in python3 python3-pip git curl; do
+    if ! command -v $pkg &>/dev/null; then
+        echo "[INFO] Menginstal $pkg secara otomatis..."
+        sudo apt-get install -y $pkg >/dev/null 2>&1
+    fi
+done
 
 # 3. Create target directory
 echo "[INFO] Preparing J.A.R.V.I.S directory at $TARGET_DIR..."
@@ -71,23 +75,37 @@ sudo -u "$REAL_USER" "$UV_BIN" pip install . --python "$VENV_DIR"
 
 # 6. Install Backend Services (Docker Images)
 echo ""
-echo "[INFO] Setting up Backend Docker Services..."
-if command -v docker &>/dev/null; then
-    echo "[OK] Docker is installed. Pulling necessary images..."
-    docker pull lbjlaq/antigravity-manager:latest
-    docker pull searxng/searxng:latest
+echo "[INFO] Memeriksa instalasi Docker..."
+if ! command -v docker &>/dev/null; then
+    echo "[INFO] Docker tidak ditemukan! Memulai instalasi otomatis Docker Engine..."
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh >/dev/null 2>&1
+    rm -f get-docker.sh
     
-    if [ -f "docker-compose.yml" ]; then
-        echo "[INFO] Starting Antigravity Manager and SearXNG via docker-compose..."
-        if docker compose version &>/dev/null; then
-            docker compose up -d antigravity-manager searxng
-        elif command -v docker-compose &>/dev/null; then
-            docker-compose up -d antigravity-manager searxng
-        fi
-        echo "[OK] Backend services started."
-    fi
+    echo "[INFO] Mendaftarkan user '$REAL_USER' ke dalam grup docker..."
+    sudo usermod -aG docker "$REAL_USER"
+    
+    # Enable and start docker service
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    echo "[OK] Docker berhasil diinstal!"
 else
-    echo "[WARNING] Docker is not installed! Core features won't work."
+    echo "[OK] Docker sudah terinstal."
+fi
+
+echo "[INFO] Setting up Backend Docker Services..."
+echo "[INFO] Pulling necessary images..."
+sudo docker pull lbjlaq/antigravity-manager:latest
+sudo docker pull searxng/searxng:latest
+
+if [ -f "docker-compose.yml" ]; then
+    echo "[INFO] Starting Antigravity Manager and SearXNG via docker-compose..."
+    if sudo docker compose version &>/dev/null; then
+        sudo docker compose up -d antigravity-manager searxng
+    elif command -v docker-compose &>/dev/null; then
+        sudo docker-compose up -d antigravity-manager searxng
+    fi
+    echo "[OK] Backend services started."
 fi
 
 # 7. Setup Systemd Service
