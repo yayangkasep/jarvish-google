@@ -116,9 +116,23 @@ def upgrade_system():
     except subprocess.CalledProcessError as e:
         print(f"❌ Upgrade failed: {e}")
 
+def status_system():
+    subprocess.call(["sudo", "systemctl", "status", "jarvish.service"])
+
+def logs_system():
+    subprocess.call(["sudo", "journalctl", "-u", "jarvish.service", "-f"])
+
+def restart_system():
+    print("Restarting J.A.R.V.I.S service...")
+    try:
+        subprocess.check_call(["sudo", "systemctl", "restart", "jarvish.service"])
+        print("✅ Service restarted successfully!")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to restart service: {e}")
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: jarvish configure | jarvish upgrade")
+        print("Usage: jarvish configure | upgrade | restart | status | logs")
         sys.exit(1)
         
     cmd = sys.argv[1]
@@ -131,6 +145,12 @@ def main():
         print("\n🎉 Configuration Complete! Please run 'sudo systemctl restart jarvish.service' to apply changes.")
     elif cmd == "upgrade":
         upgrade_system()
+    elif cmd == "restart":
+        restart_system()
+    elif cmd == "status":
+        status_system()
+    elif cmd in ("logs", "log"):
+        logs_system()
     else:
         print(f"Unknown command: {cmd}")
 
