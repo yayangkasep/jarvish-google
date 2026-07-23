@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 from core.google_auth import GoogleAuthManager
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError

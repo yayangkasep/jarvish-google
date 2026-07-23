@@ -1,8 +1,7 @@
 import os
 import sys
 
-# Ensure we can import core modules
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from config import paths
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -25,10 +24,9 @@ def main():
     Logs the user in and saves the token.json file.
     """
     import dotenv
-    dotenv.load_dotenv()
+    dotenv.load_dotenv(paths.get_env_file())
     
-    data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
-    os.makedirs(data_dir, exist_ok=True)
+    data_dir = paths.get_data_dir()
     token_path = os.path.join(data_dir, "token.json")
     
     client_id = os.getenv("GOOGLE_CLIENT_ID")

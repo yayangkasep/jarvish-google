@@ -4,12 +4,12 @@ import os
 import re
 
 # Import core modules
-ai_provider_mod = importlib.import_module("core.ai-provider")
-session_manager_mod = importlib.import_module("core.session-manager")
-tool_registry_mod = importlib.import_module("tools.tool-registry")
-app_settings_mod = importlib.import_module("config.app-settings")
-telegram_mcp_mod = importlib.import_module("connectors.telegram-mcp")
-agent_orchestrator_mod = importlib.import_module("core.agent-orchestrator")
+ai_provider_mod = importlib.import_module("jarvis.core.ai-provider")
+session_manager_mod = importlib.import_module("jarvis.core.session-manager")
+tool_registry_mod = importlib.import_module("jarvis.tools.tool-registry")
+app_settings_mod = importlib.import_module("jarvis.config.app-settings")
+telegram_mcp_mod = importlib.import_module("jarvis.connectors.telegram-mcp")
+agent_orchestrator_mod = importlib.import_module("jarvis.core.agent-orchestrator")
 from tools.memory_tool import MemoryTool
 
 try:

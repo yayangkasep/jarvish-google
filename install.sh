@@ -15,88 +15,52 @@ fi
 # Determine the real user who invoked sudo
 if [ -n "$SUDO_USER" ]; then
     REAL_USER=$SUDO_USER
+    REAL_HOME_DIR=$(getent passwd "$SUDO_USER" | cut -d: -f6)
 else
     REAL_USER=$(whoami)
+    REAL_HOME_DIR=$HOME
 fi
 
-TARGET_DIR="/opt/jarvish-google"
+TARGET_DIR="$REAL_HOME_DIR/.jarvish"
 CURRENT_DIR=$(pwd)
-REPO_URL="https://github.com/yayangkasep/jarvish-google.git"
+VENV_DIR="$TARGET_DIR/venv"
+REPO_URL="https://github.com/yayangkasep/jarvish.git"
 
-# 2. Get the Source Code (Clone or Move)
-echo "[INFO] Preparing J.A.R.V.I.S directory at $TARGET_DIR..."
-
-if [ ! -d "$TARGET_DIR" ]; then
-    mkdir -p "$TARGET_DIR"
-    chown "$REAL_USER:$REAL_USER" "$TARGET_DIR"
-fi
-
-# Check if we are already inside a cloned repo (has .git) and not already in /opt
-if [ -d "$CURRENT_DIR/.git" ] && [ "$CURRENT_DIR" != "$TARGET_DIR" ]; then
-    echo "[INFO] Local repository found. Moving files to $TARGET_DIR..."
-    cp -rT "$CURRENT_DIR" "$TARGET_DIR"
-    chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
-elif [ ! -d "$TARGET_DIR/.git" ]; then
-    echo "[INFO] No local repository found (run via curl). Cloning from GitHub..."
-    
-    # Clone as the REAL_USER so they own the git config
-    sudo -u "$REAL_USER" git clone "$REPO_URL" "$TARGET_DIR"
-    
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] Failed to clone the repository. Please check your credentials or SSH keys."
-        exit 1
-    fi
-else
-    echo "[OK] Repository already exists in $TARGET_DIR. Updating to latest version..."
-    git config --global --add safe.directory "$TARGET_DIR"
-    git -C "$TARGET_DIR" fetch origin
-    git -C "$TARGET_DIR" reset --hard origin/master
-    chown -R "$REAL_USER:$REAL_USER" "$TARGET_DIR"
-fi
-
-# Transition to the target directory
-cd "$TARGET_DIR" || exit 1
-
-# 3. Check if python3 is installed
-if command -v python3 &>/dev/null; then
-    PY_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-    echo "[OK] Python 3 is installed (Version: $PY_VER)."
-else
+# 2. Check if python3 is installed
+if ! command -v python3 &>/dev/null; then
     echo "[ERROR] Python 3 is not installed!"
-    echo "Please install Python 3.10+ and pip before running this installer."
     exit 1
 fi
 
-# 4. Check if python3-venv is available
-if ! python3 -c "import venv" &>/dev/null; then
-    echo "[ERROR] Python 'venv' module is missing!"
-    echo "Please install it using: sudo apt install python3-venv"
-    exit 1
+# 3. Create target directory
+echo "[INFO] Preparing J.A.R.V.I.S directory at $TARGET_DIR..."
+if [ ! -d "$TARGET_DIR" ]; then
+    sudo -u "$REAL_USER" mkdir -p "$TARGET_DIR"
 fi
 
-# 5. Create Virtual Environment
+# 4. Install 'uv' if not present
+echo "[INFO] Ensuring 'uv' is installed for fast environment building..."
+if ! sudo -u "$REAL_USER" command -v uv &>/dev/null; then
+    echo "[INFO] Installing uv..."
+    sudo -u "$REAL_USER" curl -LsSf https://astral.sh/uv/install.sh | sudo -u "$REAL_USER" sh
+    export PATH="$REAL_HOME_DIR/.cargo/bin:$PATH"
+fi
+
+# Use uv from cargo bin if it's not in PATH globally yet
+UV_BIN="$REAL_HOME_DIR/.cargo/bin/uv"
+if [ ! -f "$UV_BIN" ]; then
+    UV_BIN=$(sudo -u "$REAL_USER" which uv)
+fi
+
+# 5. Create Virtual Environment and Install Package
 echo ""
-echo "[INFO] Creating Virtual Environment (.venv)..."
-if [ ! -d ".venv" ]; then
-    sudo -u "$REAL_USER" python3 -m venv .venv
-    echo "[OK] Virtual Environment created."
-else
-    echo "[OK] Virtual Environment (.venv) already exists."
-fi
+echo "[INFO] Creating Virtual Environment at $VENV_DIR using uv..."
+sudo -u "$REAL_USER" "$UV_BIN" venv "$VENV_DIR"
 
-# 6. Install Requirements
-echo ""
-echo "[INFO] Installing dependencies..."
-sudo -u "$REAL_USER" .venv/bin/pip install --upgrade pip
+echo "[INFO] Installing J.A.R.V.I.S package..."
+sudo -u "$REAL_USER" "$UV_BIN" pip install . --python "$VENV_DIR"
 
-if [ -f "requirements.txt" ]; then
-    sudo -u "$REAL_USER" .venv/bin/pip install -r requirements.txt
-    echo "[OK] Dependencies installed successfully."
-else
-    echo "[WARNING] requirements.txt not found! Skipping dependency installation."
-fi
-
-# 7. Install Backend Services (Docker Images)
+# 6. Install Backend Services (Docker Images)
 echo ""
 echo "[INFO] Setting up Backend Docker Services..."
 if command -v docker &>/dev/null; then
@@ -114,11 +78,10 @@ if command -v docker &>/dev/null; then
         echo "[OK] Backend services started."
     fi
 else
-    echo "[WARNING] Docker is not installed!"
-    echo "Please install Docker to run Antigravity Manager and SearXNG."
+    echo "[WARNING] Docker is not installed! Core features won't work."
 fi
 
-# 8. Setup Systemd Service
+# 7. Setup Systemd Service
 echo ""
 echo "[INFO] Setting up J.A.R.V.I.S Systemd Service..."
 SERVICE_PATH="/etc/systemd/system/jarvish.service"
@@ -133,7 +96,7 @@ After=network.target
 Type=simple
 User=$REAL_USER
 WorkingDirectory=$TARGET_DIR
-ExecStart=$TARGET_DIR/.venv/bin/python $TARGET_DIR/main.py
+ExecStart=$VENV_DIR/bin/jarvish-server
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 RestartSec=5s
@@ -146,16 +109,13 @@ echo "Enabling and starting J.A.R.V.I.S service..."
 systemctl daemon-reload
 systemctl enable jarvish.service
 systemctl restart jarvish.service
-echo "[OK] Service jarvish.service is now restarted in the background!"
+echo "[OK] Service jarvish.service is now running in the background!"
 
-# 9. Setup Global CLI Wrapper and Binary Permissions
+# 8. Setup Global CLI Wrapper
 echo ""
-echo "[INFO] Setting up 'jarvish' Global Command and Binaries..."
-cp "$TARGET_DIR/jarvish.sh" /usr/local/bin/jarvish
+echo "[INFO] Setting up 'jarvish' Global Command..."
+ln -sf "$VENV_DIR/bin/jarvish" /usr/local/bin/jarvish
 chmod +x /usr/local/bin/jarvish
-if [ -d "$TARGET_DIR/bin" ]; then
-    chmod -R +x "$TARGET_DIR/bin/"
-fi
 echo "[OK] 'jarvish' command is now available everywhere!"
 
 echo ""
@@ -163,7 +123,7 @@ echo "=============================================="
 echo "  Installation Complete!"
 echo "  J.A.R.V.I.S is now securely installed in $TARGET_DIR"
 echo "  - To configure secrets: jarvish configure"
-echo "  - To check status:      jarvish status"
-echo "  - To view logs:         jarvish logs"
-echo "  - To restart:           jarvish restart"
+echo "  - To upgrade system:    jarvish upgrade"
+echo "  - To check status:      sudo systemctl status jarvish.service"
+echo "  - To view logs:         sudo journalctl -u jarvish.service -f"
 echo "=============================================="

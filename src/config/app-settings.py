@@ -1,11 +1,12 @@
 import os
 from dotenv import load_dotenv
 
+from . import paths
 
 class AppSettings:
     def __init__(self):
-        # Path to .env in the root directory
-        self.EnvFilePath = os.path.join(os.path.dirname(__file__), "..", ".env")
+        # Path to .env in the user directory
+        self.EnvFilePath = paths.get_env_file()
         load_dotenv(self.EnvFilePath)
 
         self.TelegramBotToken = os.getenv("TELEGRAM_BOT_TOKEN", "")

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jarvis"
+version = "1.0.0"
+description = "J.A.R.V.I.S Telegram Bot"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests==2.31.0",
+    "python-dotenv==1.0.0",
+    "google-api-python-client==2.115.0",
+    "google-auth-httplib2==0.2.0",
+    "google-auth-oauthlib==1.2.0",
+    "google-genai==0.2.1",
+    "ruff",
+    "beautifulsoup4",
+    "mcp",
+    "elevenlabs==1.30.2",
+    "pydub==0.25.1",
+    "SpeechRecognition==3.10.4"
+]
+
+[project.scripts]
+jarvish = "cli:main"
+jarvish-server = "main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["cli", "main"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

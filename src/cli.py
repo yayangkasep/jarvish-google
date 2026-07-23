@@ -1,6 +1,8 @@
 import sys
 import os
 import json
+import subprocess
+from config import paths
 
 def prompt_multiline(prompt_text):
     print(f"\n{prompt_text}")
@@ -19,7 +21,8 @@ def prompt_multiline(prompt_text):
 
 def configure_env():
     import dotenv
-    existing_env = dotenv.dotenv_values(".env")
+    env_file = paths.get_env_file()
+    existing_env = dotenv.dotenv_values(env_file)
     
     def get_input_with_default(prompt_text, key):
         default_val = existing_env.get(key, "")
@@ -46,9 +49,9 @@ GOOGLE_CLIENT_SECRET="{google_secret}"
 ANTIGRAVITY_ENDPOINT="http://localhost:8045/v1/chat/completions"
 GITHUB_PERSONAL_ACCESS_TOKEN="{github_token}"
 """
-    with open(".env", "w") as f:
+    with open(env_file, "w") as f:
         f.write(env_content)
-    print("✅ .env configured successfully!")
+    print(f"✅ .env configured successfully in {env_file}!")
 
 def configure_antigravity():
     print("\n--- Configuring config/antigravity-accounts.json ---")
@@ -91,16 +94,30 @@ def configure_antigravity():
         
     try:
         data = json.loads(content)
-        os.makedirs('config', exist_ok=True)
-        with open("config/antigravity-accounts.json", "w") as f:
+        target_path = os.path.join(paths.get_config_dir(), "antigravity-accounts.json")
+        with open(target_path, "w") as f:
             json.dump(data, f, indent=4)
-        print("✅ config/antigravity-accounts.json saved successfully!")
+        print(f"✅ antigravity-accounts.json saved successfully in {target_path}!")
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format: {e}")
 
+def upgrade_system():
+    print("=============================================")
+    print("     J.A.R.V.I.S Upgrade Initiated           ")
+    print("=============================================")
+    print("Pulling latest code and upgrading package...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "git+https://github.com/yayangkasep/jarvish.git"])
+        print("✅ Upgrade successful!")
+        print("Restarting J.A.R.V.I.S service...")
+        subprocess.check_call(["sudo", "systemctl", "restart", "jarvish.service"])
+        print("✅ Service restarted successfully!")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Upgrade failed: {e}")
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python cli.py configure")
+        print("Usage: jarvish configure | jarvish upgrade")
         sys.exit(1)
         
     cmd = sys.argv[1]
@@ -110,7 +127,9 @@ def main():
         print("=============================================")
         configure_env()
         configure_antigravity()
-        print("\n🎉 Configuration Complete! Please run 'jarvish restart' to apply changes.")
+        print("\n🎉 Configuration Complete! Please run 'sudo systemctl restart jarvish.service' to apply changes.")
+    elif cmd == "upgrade":
+        upgrade_system()
     else:
         print(f"Unknown command: {cmd}")
 

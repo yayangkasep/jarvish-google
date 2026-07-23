@@ -3,10 +3,10 @@ import sys
 import requests
 import json
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import importlib
+from config import paths
 
-app_settings_mod = importlib.import_module("config.app-settings")
+app_settings_mod = importlib.import_module("jarvis.config.app-settings")
 
 
 class AiProvider:
@@ -27,9 +27,7 @@ class AiProvider:
         try:
             with open(
                 os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "config",
+                    paths.get_config_dir(),
                     "antigravity-accounts.json",
                 ),
                 "r",

@@ -1,10 +1,11 @@
 import os
 import json
+from config import paths
 
 
 class MemoryManager:
-    def __init__(self, data_file="config/memories.json"):
-        self.data_file = os.path.join(os.path.dirname(__file__), "..", data_file)
+    def __init__(self, data_file="memories.json"):
+        self.data_file = os.path.join(paths.get_data_dir(), data_file)
         self.memories = self.LoadMemories()
 
     def LoadMemories(self):

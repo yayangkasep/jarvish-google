@@ -1,12 +1,12 @@
 import os
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from config import paths
 
 
 class GoogleAuthManager:
     def __init__(self):
-        self.data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
-        os.makedirs(self.data_dir, exist_ok=True)
+        self.data_dir = paths.get_data_dir()
         self.token_path = os.path.join(self.data_dir, "token.json")
         self.scopes = [
             "https://www.googleapis.com/auth/gmail.readonly",
