@@ -28,13 +28,13 @@ def configure_env():
         default_val = existing_env.get(key, "")
         if default_val:
             masked = default_val[:4] + "***" + default_val[-4:] if len(default_val) > 8 else "***"
-            ans = input(f"{prompt_text} [Punya Anda: {masked}]: ").strip()
+            ans = input(f"{prompt_text} [Current: {masked}]: ").strip()
             return ans if ans else default_val
         else:
             return input(f"{prompt_text}: ").strip()
 
     print("\n--- Configuring .env (Telegram & Secrets) ---")
-    print("(Tekan Enter jika tidak ingin mengubah nilai yang sudah ada)")
+    print("(Press Enter to keep the existing value)")
     token = get_input_with_default("Enter TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_TOKEN")
     allowed = get_input_with_default("Enter TELEGRAM_ALLOWED_USERS (comma-separated)", "TELEGRAM_ALLOWED_USERS")
     google_id = get_input_with_default("Enter GOOGLE_CLIENT_ID (Optional)", "GOOGLE_CLIENT_ID")
