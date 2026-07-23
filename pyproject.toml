@@ -18,9 +18,9 @@ dependencies = [
     "ruff",
     "beautifulsoup4",
     "mcp",
-    "elevenlabs==1.30.2",
-    "pydub==0.25.1",
-    "SpeechRecognition==3.10.4"
+    "elevenlabs>=1.30.2",
+    "pydub>=0.25.1",
+    "SpeechRecognition>=3.10.4"
 ]
 
 [project.scripts]
