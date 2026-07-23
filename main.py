@@ -13,10 +13,11 @@ agent_orchestrator_mod = importlib.import_module("core.agent-orchestrator")
 from tools.memory_tool import MemoryTool
 
 try:
-    from gtts import gTTS
+    import edge_tts
+    import asyncio
     from pydub import AudioSegment
 except ImportError:
-    gTTS = None
+    edge_tts = None
     AudioSegment = None
 
 def strip_markdown_for_tts(text):
@@ -41,7 +42,7 @@ def strip_markdown_for_tts(text):
     return text.strip()
 
 def send_voice_note(connector, user_id, text):
-    if not gTTS or not AudioSegment:
+    if not edge_tts or not AudioSegment:
         print("TTS packages not installed. Skipping voice note.")
         return
         
@@ -55,13 +56,14 @@ def send_voice_note(connector, user_id, text):
         
     try:
         import tempfile
-        tts = gTTS(text=clean_text, lang='id')
         
         with tempfile.TemporaryDirectory() as tmpdir:
             mp3_path = os.path.join(tmpdir, "voice.mp3")
             ogg_path = os.path.join(tmpdir, "voice.ogg")
             
-            tts.save(mp3_path)
+            # Generate speech asynchronously using Edge TTS (Ardi - Male Indonesian)
+            communicate = edge_tts.Communicate(clean_text, "id-ID-ArdiNeural", rate="+15%")
+            asyncio.run(communicate.save(mp3_path))
             
             # Convert to OGG OPUS
             audio = AudioSegment.from_mp3(mp3_path)
