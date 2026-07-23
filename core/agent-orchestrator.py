@@ -12,6 +12,9 @@ class AgentOrchestrator:
 
     def process_message(self, user_id, text, image_base64=None, progress_callback=None):
         try:
+            # Cleanup any incomplete tool turns from previous crashes
+            self.sessions.CleanupIncompleteTurns(user_id)
+            
             # Add user message to session
             if image_base64:
                 content_payload = [

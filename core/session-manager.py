@@ -54,3 +54,26 @@ class SessionManager:
         if user_id in self.sessions:
             self.sessions[user_id] = []
             self.SaveSessions()
+
+    def CleanupIncompleteTurns(self, user_id):
+        user_id = str(user_id)
+        if user_id not in self.sessions:
+            return
+            
+        history = self.sessions[user_id]
+        if not history:
+            return
+            
+        modified = False
+        # Remove trailing tool messages
+        while history and history[-1].get("role") == "tool":
+            history.pop()
+            modified = True
+            
+        # Remove trailing assistant messages that have tool_calls
+        if history and history[-1].get("role") == "assistant" and history[-1].get("tool_calls"):
+            history.pop()
+            modified = True
+            
+        if modified:
+            self.SaveSessions()
