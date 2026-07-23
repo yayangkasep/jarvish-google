@@ -12,6 +12,7 @@ services:
     ports:
       - "8045:8045"
     restart: unless-stopped
+    
   searxng:
     image: searxng/searxng:latest
     container_name: searxng
@@ -19,28 +20,9 @@ services:
       - "8081:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:8081/
+    env_file:
+      # Inject securely configured environment variables from J.A.R.V.I.S
+      - ${HOME}/.jarvish/.env
     volumes:
       - ./searxng:/etc/searxng
-    restart: unless-stopped
-
-  jarvish-bot:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: jarvish-bot
-    depends_on:
-      - antigravity-manager
-    environment:
-      - ANTIGRAVITY_ENDPOINT=http://antigravity-manager:8045/v1/chat/completions
-      - ANTIGRAVITY_API_KEY=test
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ./.env:/app/.env
-      - ./core:/app/core
-      - ./main.py:/app/main.py
-      - ./config:/app/config
-      - ./connectors:/app/connectors
-      - ./tools:/app/tools
-    ports:
-      - "8080:8080"
     restart: unless-stopped
