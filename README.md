@@ -34,3 +34,40 @@ Setelah J.A.R.V.I.S terinstal, Anda bisa mengelolanya dengan perintah *systemd* 
   `sudo systemctl restart jarvish`
 - **Menghentikan Bot:** 
   `sudo systemctl stop jarvish`
+
+## 💻 Instalasi Manual (Windows / Local)
+
+Jika Anda ingin menjalankan J.A.R.V.I.S secara manual di komputer lokal (misalnya di Windows), ikuti langkah-langkah berikut:
+
+1. **Clone Repositori:**
+   ```powershell
+   git clone https://github.com/yayangkasep/jarvish-google.git
+   cd jarvish-google
+   ```
+
+2. **Buat Virtual Environment:**
+   Pastikan Anda sudah menginstal Python (disarankan versi 3.10+).
+   ```powershell
+   python -m venv .venv
+   ```
+
+3. **Aktifkan Virtual Environment:**
+   Ini adalah langkah yang paling penting. Anda harus mengaktifkan *environment* sebelum menginstal modul.
+   ```powershell
+   # Untuk Windows PowerShell:
+   .\.venv\Scripts\Activate.ps1
+   
+   # Untuk Windows Command Prompt (CMD):
+   .\.venv\Scripts\activate.bat
+   ```
+   *(Jika berhasil, akan ada tulisan `(.venv)` di sebelah kiri input terminal Anda).*
+
+4. **Instal Modul / Dependencies:**
+   ```powershell
+   pip install -r requirements.txt
+   ```
+
+5. **Jalankan J.A.R.V.I.S:**
+   ```powershell
+   python main.py
+   ```
