@@ -39,6 +39,10 @@ def strip_markdown_for_tts(text):
     text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)
     # Remove HTML tags
     text = re.sub(r'<.*?>', '', text)
+    # Fix degrees symbol for TTS
+    text = text.replace("°C", " derajat Celcius")
+    text = text.replace("° C", " derajat Celcius")
+    text = text.replace("°", " derajat")
     return text.strip()
 
 def send_voice_note(connector, user_id, text):
