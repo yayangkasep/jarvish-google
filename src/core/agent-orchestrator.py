@@ -34,16 +34,14 @@ class AgentOrchestrator:
             # Fetch full history
             raw_history = self.sessions.GetHistory(user_id)
 
-            # Inject memory facts
+            # Inject System Context
+            system_text = f"Identitas Pengguna (User ID): {user_id}\n"
             facts = self.memory.GetFacts(user_id)
             if facts:
-                facts_text = (
-                    "FAKTA PENTING TENTANG PENGGUNA YANG HARUS DIINGAT:\n"
-                    + "\n".join(f"- {f}" for f in facts)
-                )
-                history = [{"role": "system", "content": facts_text}] + raw_history
-            else:
-                history = raw_history
+                system_text += "FAKTA PENTING TENTANG PENGGUNA YANG HARUS DIINGAT:\n"
+                system_text += "\n".join(f"- {f}" for f in facts)
+                
+            history = [{"role": "system", "content": system_text}] + raw_history
 
             response = ""
 
@@ -122,17 +120,12 @@ class AgentOrchestrator:
 
                     # Refresh history and loop again
                     raw_history = self.sessions.GetHistory(user_id)
+                    system_text = f"Identitas Pengguna (User ID): {user_id}\n"
                     facts = self.memory.GetFacts(user_id)
                     if facts:
-                        facts_text = (
-                            "FAKTA PENTING TENTANG PENGGUNA YANG HARUS DIINGAT:\n"
-                            + "\n".join(f"- {f}" for f in facts)
-                        )
-                        history = [
-                            {"role": "system", "content": facts_text}
-                        ] + raw_history
-                    else:
-                        history = raw_history
+                        system_text += "FAKTA PENTING TENTANG PENGGUNA YANG HARUS DIINGAT:\n"
+                        system_text += "\n".join(f"- {f}" for f in facts)
+                    history = [{"role": "system", "content": system_text}] + raw_history
                 else:
                     # Final response
                     self.sessions.AddMessage(user_id, "assistant", content)
