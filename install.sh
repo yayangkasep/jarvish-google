@@ -7,9 +7,18 @@ echo ""
 
 # 1. Require Sudo
 if [ "$EUID" -ne 0 ]; then
-  echo "[ERROR] Please run this installer with sudo privileges."
-  echo "Command: sudo bash $0"
-  exit 1
+  echo "[INFO] Skrip ini membutuhkan hak akses root (sudo)."
+  echo "Sistem akan meminta password Anda sekarang..."
+  
+  # Jika script dijalankan dari file lokal, jalankan ulang dirinya sendiri dengan sudo
+  if [ -f "$0" ]; then
+      exec sudo bash "$0" "$@"
+  else
+      # Jika script dijalankan dari curl/piping, kita hentikan agar user menjalankannya ulang
+      echo "[ERROR] Anda menjalankan skrip dari curl tanpa sudo."
+      echo "Jalankan ulang dengan perintah: curl -sSL <URL> | sudo bash"
+      exit 1
+  fi
 fi
 
 # Determine the real user who invoked sudo
