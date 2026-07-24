@@ -48,17 +48,17 @@ class BackgroundScheduler:
             self.callback(user_id, event_text)
 
     def trigger_morning(self):
-        prompt = "[SYSTEM_EVENT] Saat ini pukul 07:00 pagi. Ini adalah saatnya Anda (J.A.R.V.I.S) berinisiatif menghubungi Bos. Baca jadwal kalender hari ini, ringkas email terbaru yang masuk semalaman, dan cek cuaca. Kemudian buatlah pesan sapaan selamat pagi yang proaktif, bersemangat, dan informatif kepada Bos beserta hasil temuan tersebut!"
+        prompt = "[SYSTEM_EVENT] Saat ini pukul 07:00 pagi. Ini adalah saatnya Anda (J.A.R.V.I.S) berinisiatif menghubungi Bos. WAJIB GUNAKAN TOOL (seperti CalendarTool, ReadRecentEmails, WebSearch) sekarang juga secara berurutan untuk membaca jadwal hari ini, meringkas email terbaru, dan mengecek cuaca! JANGAN berasumsi data sudah ada. Setelah mendapat data dari tool, buatlah pesan sapaan pagi yang proaktif kepada Bos."
         self.broadcast_event(prompt)
         
     def trigger_afternoon(self):
-        prompt = "[SYSTEM_EVENT] Saat ini pukul 12:00 siang. J.A.R.V.I.S, berinisiatiflah menyapa Bos. Ingatkan Bos untuk istirahat dan makan siang. Cek email terbaru dan sampaikan jika ada pesan atau tugas mendesak yang butuh perhatian."
+        prompt = "[SYSTEM_EVENT] Saat ini pukul 12:00 siang. J.A.R.V.I.S, berinisiatiflah menyapa Bos. WAJIB GUNAKAN TOOL ReadRecentEmails untuk mengecek pesan mendesak. Ingatkan Bos untuk istirahat dan makan siang berdasarkan data yang Anda temukan."
         self.broadcast_event(prompt)
         
     def trigger_evening(self):
-        prompt = "[SYSTEM_EVENT] Saat ini pukul 17:00 sore. J.A.R.V.I.S, hubungi Bos! Ingatkan bahwa ini waktu yang tepat untuk bersiap mengakhiri pekerjaan hari ini. Evaluasi sekilas jika ada target/jadwal yang belum diselesaikan."
+        prompt = "[SYSTEM_EVENT] Saat ini pukul 17:00 sore. J.A.R.V.I.S, hubungi Bos! WAJIB GUNAKAN TOOL TaskTool atau CalendarTool untuk mengevaluasi apakah ada tugas hari ini yang terlewat. Ingatkan Bos untuk bersiap pulang."
         self.broadcast_event(prompt)
         
     def trigger_night(self):
-        prompt = "[SYSTEM_EVENT] Saat ini pukul 20:00 malam. J.A.R.V.I.S, berikan laporan penutup hari. Rangkum peristiwa hari ini secara singkat dan perintahkan Bos untuk bersantai dan istirahat penuh energi untuk esok hari."
+        prompt = "[SYSTEM_EVENT] Saat ini pukul 20:00 malam. J.A.R.V.I.S, berikan laporan penutup hari. WAJIB GUNAKAN TOOL jika Anda butuh melihat rekapan, lalu perintahkan Bos untuk bersantai."
         self.broadcast_event(prompt)
