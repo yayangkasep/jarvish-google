@@ -99,7 +99,12 @@ def build_system_prompt(current_time, required_tools=None, messages=None):
     prompt_parts = [BASE_PERSONA]
     
     # 2. Style Guidelines
-    prompt_parts.append(STYLE_GUIDELINES.format(current_time=current_time))
+    import importlib
+    app_settings_mod = importlib.import_module("config.app-settings")
+    settings = app_settings_mod.AppSettings()
+    current_llm = settings.GetLlmModel()
+    
+    prompt_parts.append(STYLE_GUIDELINES.format(current_time=current_time, current_llm=current_llm))
     
     # 3. Always-available "virtual" tools
     prompt_parts.append(IMAGE_GEN_PROMPT)
