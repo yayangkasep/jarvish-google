@@ -8,13 +8,13 @@ class SystemCommandTool:
             "type": "function",
             "function": {
                 "name": self.ToolName,
-                "description": "Mengeksekusi perintah terminal pada sistem operasi (misalnya apt update, df -h, ls). Peringatan: Gunakan hanya jika diminta pengguna.",
+                "description": "Executes terminal commands on the operating system (e.g., apt update, df -h, ls). Warning: Use only if explicitly requested by the user.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "command": {
                             "type": "string",
-                            "description": "Perintah bash/terminal yang ingin dieksekusi.",
+                            "description": "The bash/terminal command to execute.",
                         }
                     },
                     "required": ["command"],
@@ -25,7 +25,7 @@ class SystemCommandTool:
     def Execute(self, Arguments):
         command = Arguments.get("command")
         if not command:
-            return "Error: Argumen 'command' kosong."
+            return "Error: The 'command' argument is empty."
 
         try:
             # Gunakan timeout agar tidak hang
@@ -36,22 +36,22 @@ class SystemCommandTool:
             output = result.stdout + result.stderr
 
             if not output.strip():
-                return f"Perintah `{command}` berhasil dieksekusi tetapi tidak menghasilkan output (keluaran kosong)."
+                return f"Command `{command}` executed successfully but produced no output."
 
             # Batasi panjang output agar tidak over-limit di Telegram/AI Token
             if len(output) > 2000:
                 output = (
-                    output[:2000] + "\n...[Output terpotong karena terlalu panjang]..."
+                    output[:2000] + "\n...[Output truncated due to excessive length]..."
                 )
 
-            return f"Output dari `{command}`:\n{output}"
+            return f"Output from `{command}`:\n{output}"
 
         except subprocess.TimeoutExpired:
             return (
-                f"Error: Perintah `{command}` melebihi batas waktu eksekusi (timeout)."
+                f"Error: Command `{command}` exceeded execution time limit (timeout)."
             )
         except Exception as e:
-            return f"Terjadi kesalahan saat mengeksekusi perintah: {str(e)}"
+            return f"Error executing command: {str(e)}"
 
 class UpdateJarvishTool:
     def __init__(self):
@@ -60,7 +60,7 @@ class UpdateJarvishTool:
             "type": "function",
             "function": {
                 "name": self.ToolName,
-                "description": "Mengupdate kode J.A.R.V.I.S secara otomatis dari repositori Git dan merestart service J.A.R.V.I.S.",
+                "description": "Automatically updates J.A.R.V.I.S code from the Git repository and restarts the J.A.R.V.I.S service.",
                 "parameters": {
                     "type": "object",
                     "properties": {},
@@ -78,19 +78,19 @@ class UpdateJarvishTool:
             output = pull_result.stdout + pull_result.stderr
             
             if pull_result.returncode != 0:
-                return f"Gagal melakukan update Git:\n{output}"
+                return f"Failed to perform Git update:\n{output}"
                 
-            # Jika berhasil pull, jalankan restart service di background dengan delay
-            # agar J.A.R.V.I.S sempat merespons ke pengguna
+            # If pull succeeds, run restart service in background with a delay
+            # so J.A.R.V.I.S has time to respond to the user
             subprocess.Popen(
                 "sleep 5 && sudo systemctl restart jarvish.service", 
                 shell=True, 
                 start_new_session=True
             )
             
-            return f"Berhasil update kode dari Git:\n{output}\nSistem akan restart otomatis dalam 5 detik."
+            return f"Successfully updated code from Git:\n{output}\nSystem will automatically restart in 5 seconds."
         except Exception as e:
-            return f"Terjadi kesalahan saat update: {str(e)}"
+            return f"Error during update: {str(e)}"
 
 class TestPythonTool:
     def __init__(self):
@@ -99,13 +99,13 @@ class TestPythonTool:
             "type": "function",
             "function": {
                 "name": self.ToolName,
-                "description": "Mengompilasi dan menguji kelayakan file Python (khususnya untuk alat baru) sebelum di-deploy. Gunakan ini untuk memastikan kode Anda bebas dari syntax error dan struktur class sudah benar.",
+                "description": "Compiles and tests the viability of a Python file (especially for new tools) before deployment. Use this to ensure your code is free of syntax errors and the class structure is correct.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "file_path": {
                             "type": "string",
-                            "description": "Path absolut atau relatif ke file Python yang ingin diuji (contoh: src/tools/math_tool.py).",
+                            "description": "Absolute or relative path to the Python file to be tested (e.g., src/tools/math_tool.py).",
                         }
                     },
                     "required": ["file_path"],
@@ -122,7 +122,7 @@ class TestPythonTool:
 
         file_path = Arguments.get("file_path")
         if not file_path or not os.path.exists(file_path):
-            return f"Error: File '{file_path}' tidak ditemukan."
+            return f"Error: File '{file_path}' not found."
 
         try:
             # 1. Syntax Check
@@ -142,30 +142,30 @@ class TestPythonTool:
                     tool_classes.append(obj)
             
             if not tool_classes:
-                return "Syntax OK, tetapi tidak ditemukan kelas yang berakhiran 'Tool' di dalam file ini."
+                return "Syntax OK, but no class ending with 'Tool' was found in this file."
                 
-            report = ["Syntax OK. Ditemukan kelas Tool berikut:"]
+            report = ["Syntax OK. Found the following Tool classes:"]
             for cls in tool_classes:
                 try:
                     instance = cls()
                     missing = []
                     if not hasattr(instance, "ToolName"): missing.append("ToolName")
                     if not hasattr(instance, "Schema"): missing.append("Schema")
-                    if not hasattr(instance, "Execute"): missing.append("fungsi Execute()")
+                    if not hasattr(instance, "Execute"): missing.append("Execute() function")
                     
                     if missing:
-                        report.append(f"- Kelas {cls.__name__} kehilangan properti wajib: {', '.join(missing)}")
+                        report.append(f"- Class {cls.__name__} is missing required properties: {', '.join(missing)}")
                     else:
-                        report.append(f"- Kelas {cls.__name__} valid dan siap di-deploy!")
+                        report.append(f"- Class {cls.__name__} is valid and ready to deploy!")
                 except Exception as e:
-                    report.append(f"- Error saat mencoba instansiasi kelas {cls.__name__}: {str(e)}")
+                    report.append(f"- Error during instantiation of class {cls.__name__}: {str(e)}")
                     
             return "\n".join(report)
 
         except py_compile.PyCompileError as e:
-            return f"Syntax Error pada kode Anda:\n{str(e)}"
+            return f"Syntax Error in your code:\n{str(e)}"
         except Exception as e:
-            return f"Runtime Error saat menguji kode Anda:\n{str(e)}"
+            return f"Runtime Error while testing your code:\n{str(e)}"
 
 class RestartJarvishTool:
     def __init__(self):
@@ -174,7 +174,7 @@ class RestartJarvishTool:
             "type": "function",
             "function": {
                 "name": self.ToolName,
-                "description": "Me-restart background service J.A.R.V.I.S secara aman. Wajib digunakan SETELAH Anda membuat/mengubah kode sumber dan lulus pengujian dari TestPythonTool.",
+                "description": "Gracefully restarts the J.A.R.V.I.S background service. MUST be used AFTER you create/modify source code and it passes testing with TestPythonTool.",
                 "parameters": {
                     "type": "object",
                     "properties": {},
@@ -190,6 +190,6 @@ class RestartJarvishTool:
                 shell=True, 
                 start_new_session=True
             )
-            return "Sistem akan restart otomatis dalam 5 detik untuk menerapkan seluruh perubahan kode yang baru Anda buat!"
+            return "System will automatically restart in 5 seconds to apply all your newly created code changes!"
         except Exception as e:
-            return f"Terjadi kesalahan saat restart: {str(e)}"
+            return f"Error during restart: {str(e)}"
