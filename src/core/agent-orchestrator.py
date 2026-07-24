@@ -112,7 +112,7 @@ class AgentOrchestrator:
                         # Execute the tool
                         print(f"Executing tool {tool_name} with args {args}")
                         if progress_callback:
-                            progress_callback(f"Sedang mengakses: {tool_name}...")
+                            progress_callback(f"Accessing system resource: {tool_name}...")
 
                         result = self.registry.ExecuteTool(tool_name, args)
 

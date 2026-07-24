@@ -103,7 +103,7 @@ AgentOrchestrator = agent_orchestrator_mod.AgentOrchestrator
 def send_long_message(connector, user_id, text, msg_id=None):
     if not text:
         if msg_id:
-            connector.EditMessage(user_id, msg_id, "Berikut gambarnya, Pak!")
+            connector.EditMessage(user_id, msg_id, "Image processed successfully.")
         return
 
     if len(text) > 4000:
@@ -257,7 +257,7 @@ def main():
             
     def proactive_callback(user_id, text):
         print(f"Executing proactive routine for {user_id}")
-        msg_id = TelegramConnector.SendMessage(user_id, "Sedang menyiapkan laporan proaktif...")
+        msg_id = TelegramConnector.SendMessage(user_id, "Compiling proactive report...")
         
         def progress_cb(msg):
             TelegramConnector.EditMessage(user_id, msg_id, msg)
@@ -280,7 +280,7 @@ def main():
             
         except Exception as e:
             print(f"Error in proactive event: {e}")
-            TelegramConnector.EditMessage(user_id, msg_id, f"Gagal menyusun laporan proaktif: {e}")
+            TelegramConnector.EditMessage(user_id, msg_id, f"Failed to compile proactive report: {e}")
 
     scheduler = BackgroundScheduler(proactive_callback, get_target_users)
     scheduler.start()
