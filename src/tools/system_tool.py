@@ -80,15 +80,18 @@ class UpdateJarvishTool:
             if pull_result.returncode != 0:
                 return f"Failed to perform Git update:\n{output}"
                 
-            # If pull succeeds, run restart service in background with a delay
-            # so J.A.R.V.I.S has time to respond to the user
-            subprocess.Popen(
-                "sleep 5 && sudo systemctl restart jarvish.service", 
-                shell=True, 
-                start_new_session=True
-            )
+            # If pull succeeds, trigger suicide to let systemd restart it
+            import threading
+            import time
+            import os
             
-            return f"Successfully updated code from Git:\n{output}\nSystem will automatically restart in 5 seconds."
+            def kill_self():
+                time.sleep(3)
+                os._exit(1)
+                
+            threading.Thread(target=kill_self, daemon=True).start()
+            
+            return f"Successfully updated code from Git:\n{output}\nSystem will automatically restart in a few seconds."
         except Exception as e:
             return f"Error during update: {str(e)}"
 
@@ -184,12 +187,14 @@ class RestartJarvishTool:
         }
 
     def Execute(self, Arguments):
-        try:
-            subprocess.Popen(
-                "sleep 5 && sudo systemctl restart jarvish.service", 
-                shell=True, 
-                start_new_session=True
-            )
-            return "System will automatically restart in 5 seconds to apply all your newly created code changes!"
-        except Exception as e:
-            return f"Error during restart: {str(e)}"
+        import threading
+        import time
+        import os
+        
+        def kill_self():
+            time.sleep(3)
+            os._exit(1)
+            
+        threading.Thread(target=kill_self, daemon=True).start()
+        
+        return "System will automatically restart in a few seconds (suicide trigger activated) to apply all your newly created code changes!"
