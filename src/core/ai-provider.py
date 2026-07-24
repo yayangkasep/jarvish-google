@@ -118,7 +118,7 @@ class AiProvider:
             "Content-Type": "application/json",
         }
 
-        Payload = {"model": "gemini-2.5-flash", "temperature": 0.7}
+        Payload = {"model": "gemini-3-pro-high", "temperature": 0.7}
 
         if Messages is not None:
             # Inject System Prompt as the first message
