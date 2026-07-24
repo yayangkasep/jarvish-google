@@ -243,6 +243,48 @@ def main():
                 "Sorry, I encountered an error while communicating with the AI.",
             )
 
+    # 4.5 Start Proactive Background Scheduler
+    from core.scheduler import BackgroundScheduler
+    from core.database import get_session, User
+    
+    def get_target_users():
+        db = get_session()
+        try:
+            users = db.query(User).all()
+            return [u.telegram_id for u in users]
+        finally:
+            db.close()
+            
+    def proactive_callback(user_id, text):
+        print(f"Executing proactive routine for {user_id}")
+        msg_id = TelegramConnector.SendMessage(user_id, "Sedang menyiapkan laporan proaktif...")
+        
+        def progress_cb(msg):
+            TelegramConnector.EditMessage(user_id, msg_id, msg)
+            
+        try:
+            Response = Orchestrator.process_message(
+                user_id, text, image_base64=None, progress_callback=progress_cb
+            )
+            
+            # Extract and send markdown images first
+            images = re.findall(r"!\[(.*?)\]\((.*?)\)", Response)
+            if images:
+                for caption, url in images:
+                    TelegramConnector.SendPhoto(user_id, url, caption)
+                    Response = Response.replace(f"![{caption}]({url})", "").strip()
+            
+            # Send the final response via text and voice note
+            send_long_message(TelegramConnector, user_id, Response, msg_id)
+            send_voice_note(TelegramConnector, user_id, Response)
+            
+        except Exception as e:
+            print(f"Error in proactive event: {e}")
+            TelegramConnector.EditMessage(user_id, msg_id, f"Gagal menyusun laporan proaktif: {e}")
+
+    scheduler = BackgroundScheduler(proactive_callback, get_target_users)
+    scheduler.start()
+
     # 5. Start Polling
     if TelegramConnector.IsConnected:
         TelegramConnector.StartPolling(handle_incoming_message)

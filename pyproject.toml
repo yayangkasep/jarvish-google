@@ -21,7 +21,8 @@ dependencies = [
     "elevenlabs>=1.30.2",
     "pydub>=0.25.1",
     "SpeechRecognition>=3.10.4",
-    "sqlalchemy>=2.0.0"
+    "sqlalchemy>=2.0.0",
+    "schedule>=1.2.1"
 ]
 
 [project.scripts]
