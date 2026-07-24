@@ -191,20 +191,20 @@ def main():
         if text and text.startswith("/start"):
             TelegramConnector.SendMessage(
                 user_id,
-                "Selamat datang, Pak. Sistem J.A.R.V.I.S telah aktif dan siap menerima perintah Anda.",
+                "Welcome, Sir. The J.A.R.V.I.S system is online and ready for your commands.",
             )
             return
         elif text and text.startswith("/help"):
             TelegramConnector.SendMessage(
                 user_id,
-                "Protokol Bantuan Aktif, Pak.\n\nAnda dapat memberikan instruksi apa pun kepada saya melalui teks. Jika Anda ingin mereset memori saya untuk memulai topik baru, silakan gunakan perintah /clear.",
+                "Help Protocol Active, Sir.\n\nYou may provide any instructions via text. To reset my memory and start a new topic, please use the /clear command.",
             )
             return
         elif text and text.startswith("/clear"):
             Sessions.ClearSession(user_id)
             TelegramConnector.SendMessage(
                 user_id,
-                "Memori sesi telah dihapus, Pak. Kita mulai dengan sistem yang segar. Apa perintah Anda selanjutnya?",
+                "Session memory cleared, Sir. We are starting with a fresh system. What are your next commands?",
             )
             return
 

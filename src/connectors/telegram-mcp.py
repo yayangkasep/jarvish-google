@@ -96,7 +96,7 @@ class TelegramMcp(BaseConnector):
                             doc_text = self._download_and_extract_document(
                                 file_id, file_name
                             )
-                            text = f"[Isi Dokumen {file_name}:\n{doc_text}]\n\nUser: {caption}"
+                            text = f"[Document Content {file_name}:\n{doc_text}]\n\nUser: {caption}"
                         elif photo:
                             largest_photo = max(
                                 photo, key=lambda x: x.get("file_size", 0)
@@ -142,7 +142,7 @@ class TelegramMcp(BaseConnector):
                                 )
                                 self.SendMessage(
                                     user_id,
-                                    "Maaf anda bukan bos saya, saya hanya melayani bos saya @yayangkasep",
+                                    "Access denied. I only serve my creator @yayangkasep.",
                                 )
                 elif res.status_code == 409:
                     print(
@@ -364,9 +364,9 @@ class TelegramMcp(BaseConnector):
                                 text = recognizer.recognize_google(audio_data, language="id-ID")
                                 return text
                             except sr.UnknownValueError:
-                                return "[Error: Suara tidak terdengar jelas atau sistem tidak dapat memahaminya]"
+                                return "[Error: Voice unclear or system unable to comprehend]"
                             except sr.RequestError as e:
-                                return f"[Error: Gagal menghubungi layanan pengenal suara: {e}]"
+                                return f"[Error: Failed to contact speech recognition service: {e}]"
                 else:
                     return f"[Error: Failed to download voice file, status {file_res.status_code}]"
             else:
