@@ -13,6 +13,8 @@ class AppSettings:
         self.TelegramAllowedUsers = os.getenv("TELEGRAM_ALLOWED_USERS", "*")
         self.GoogleClientId = os.getenv("GOOGLE_CLIENT_ID", "")
         self.GoogleClientSecret = os.getenv("GOOGLE_CLIENT_SECRET", "")
+        self.LlmModel = os.getenv("LLM_MODEL", "gemini-3-pro-high")
+        self.LlmTemperature = float(os.getenv("LLM_TEMPERATURE", "0.7"))
 
     def GetTelegramToken(self):
         return self.TelegramBotToken
@@ -25,3 +27,9 @@ class AppSettings:
             "ClientId": self.GoogleClientId,
             "ClientSecret": self.GoogleClientSecret,
         }
+
+    def GetLlmModel(self):
+        return self.LlmModel
+
+    def GetLlmTemperature(self):
+        return self.LlmTemperature

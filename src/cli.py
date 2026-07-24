@@ -104,6 +104,74 @@ def configure_antigravity():
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format: {e}")
 
+def configure_models():
+    import dotenv
+    env_file = paths.get_env_file()
+    existing_env = dotenv.dotenv_values(env_file)
+    
+    print("=============================================")
+    print("     J.A.R.V.I.S Model Configurator          ")
+    print("=============================================")
+    print("Available Models:")
+    
+    models = [
+        "gemini-3.6-flash-high",
+        "gemini-3.6-flash-medium",
+        "gemini-3.6-flash-low",
+        "gemini-3.5-flash-high",
+        "gemini-3.1-pro-high",
+        "gemini-3.1-pro-low",
+        "claude-sonnet-4.6-thinking",
+        "claude-opus-4.6-thinking",
+        "gpt-oss-120b-medium",
+        "gemini-2.5-flash"
+    ]
+    
+    for idx, model in enumerate(models):
+        print(f"[{idx + 1}] {model}")
+        
+    current_model = existing_env.get("LLM_MODEL", "gemini-3-pro-high")
+    print(f"\nCurrent Model: {current_model}")
+    
+    choice = input(f"Select model number (1-{len(models)}) or press Enter to keep current: ").strip()
+    
+    if choice and choice.isdigit() and 1 <= int(choice) <= len(models):
+        selected_model = models[int(choice) - 1]
+    else:
+        selected_model = current_model
+        
+    current_temp = existing_env.get("LLM_TEMPERATURE", "0.7")
+    temp_choice = input(f"Enter Temperature (e.g., 0.7 for normal, 0.2 for strict, 1.0 for creative) [Current: {current_temp}]: ").strip()
+    
+    if temp_choice:
+        try:
+            float(temp_choice)
+            selected_temp = temp_choice
+        except ValueError:
+            print("Invalid temperature, keeping current.")
+            selected_temp = current_temp
+    else:
+        selected_temp = current_temp
+        
+    # Read entire env file and update
+    lines = []
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            lines = f.readlines()
+            
+    # Remove existing LLM_MODEL and LLM_TEMPERATURE
+    lines = [l for l in lines if not l.startswith("LLM_MODEL=") and not l.startswith("LLM_TEMPERATURE=")]
+    
+    # Append new values
+    lines.append(f"LLM_MODEL=\"{selected_model}\"\n")
+    lines.append(f"LLM_TEMPERATURE=\"{selected_temp}\"\n")
+    
+    with open(env_file, 'w') as f:
+        f.writelines(lines)
+        
+    print(f"✅ AI Model successfully updated to {selected_model} (Temp: {selected_temp})!")
+    print("Please run 'jarvish restart' to apply the new model.")
+
 def upgrade_system():
     print("=============================================")
     print("     J.A.R.V.I.S Upgrade Initiated           ")
@@ -154,6 +222,7 @@ def print_help():
     print("Usage: jarvish [command]")
     print("\nCommands:")
     print("  configure     - Setup API keys and environment variables")
+    print("  models        - Switch AI Models (e.g. Gemini Pro, Claude) and Temperature")
     print("  upgrade       - Pull latest code and upgrade the system")
     print("  auth-google   - Authenticate with Google (Calendar/Gmail) via OAuth")
     print("  restart       - Restart the J.A.R.V.I.S background service")
@@ -182,6 +251,8 @@ def main():
         status_system()
     elif cmd in ("logs", "log"):
         logs_system()
+    elif cmd == "models":
+        configure_models()
     elif cmd == "auth-google":
         auth_google()
     elif cmd in ("help", "--help", "-h"):

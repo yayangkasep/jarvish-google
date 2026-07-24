@@ -118,7 +118,10 @@ class AiProvider:
             "Content-Type": "application/json",
         }
 
-        Payload = {"model": "gemini-3-pro-high", "temperature": 0.7}
+        Payload = {
+            "model": self.Settings.GetLlmModel(), 
+            "temperature": self.Settings.GetLlmTemperature()
+        }
 
         if Messages is not None:
             # Inject System Prompt as the first message
