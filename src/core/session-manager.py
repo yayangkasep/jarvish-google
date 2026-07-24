@@ -38,7 +38,40 @@ class SessionManager:
                     history.append(msg)
                 except Exception as e:
                     print(f"Failed to parse chat json: {e}")
-            return history
+            
+            # --- SANITIZE HISTORY FOR GEMINI API ---
+            # Gemini strictly requires tool responses to immediately follow tool calls.
+            sanitized = []
+            for i, msg in enumerate(history):
+                role = msg.get("role")
+                
+                # If it's a tool message, ensure the previous message was an assistant tool call
+                if role == "tool":
+                    if not sanitized:
+                        continue # Drop orphaned tool message at the start
+                    
+                    prev_msg = sanitized[-1]
+                    if prev_msg.get("role") != "assistant" or not prev_msg.get("tool_calls"):
+                        # Preceding message is not an assistant tool call, drop this tool message
+                        continue
+                        
+                # If previous message was an assistant with tool_calls, but current is NOT a tool message
+                if sanitized:
+                    prev_msg = sanitized[-1]
+                    if prev_msg.get("role") == "assistant" and prev_msg.get("tool_calls") and role != "tool":
+                        # The assistant made a tool call but never got a response (dangling tool call)
+                        # We must strip the tool_calls from the assistant message to prevent API error
+                        del prev_msg["tool_calls"]
+                
+                sanitized.append(msg)
+                
+            # Final check: if the very last message is a dangling tool_call, strip it
+            if sanitized:
+                last_msg = sanitized[-1]
+                if last_msg.get("role") == "assistant" and last_msg.get("tool_calls"):
+                    del last_msg["tool_calls"]
+                    
+            return sanitized
         finally:
             db.close()
 
