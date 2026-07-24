@@ -143,6 +143,11 @@ def main():
     Registry = ToolRegistry()
     Registry.AutoDiscoverTools(os.path.join(os.path.dirname(__file__), "tools"))
 
+    # Also discover custom AI-generated tools in the working directory
+    custom_tools_dir = os.path.join(os.getcwd(), "src", "tools")
+    if os.path.exists(custom_tools_dir) and custom_tools_dir != os.path.join(os.path.dirname(__file__), "tools"):
+        Registry.AutoDiscoverTools(custom_tools_dir)
+
     # Load GitHub MCP
     try:
         from core.mcp_manager import McpManager, McpToolWrapper

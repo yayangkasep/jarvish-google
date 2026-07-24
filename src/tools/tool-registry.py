@@ -39,8 +39,17 @@ class ToolRegistry:
                 module_name = filename[:-3]
                 # Try to import assuming it's in the 'tools' package or relative
                 try:
-                    module_path = f"{os.path.basename(tools_dir)}.{module_name}"
-                    module = importlib.import_module(module_path)
+                    try:
+                        module_path = f"{os.path.basename(tools_dir)}.{module_name}"
+                        module = importlib.import_module(module_path)
+                    except ImportError:
+                        import importlib.util
+                        import sys
+                        file_path = os.path.join(tools_dir, filename)
+                        spec = importlib.util.spec_from_file_location(module_name, file_path)
+                        module = importlib.util.module_from_spec(spec)
+                        sys.modules[module_name] = module
+                        spec.loader.exec_module(module)
 
                     for name, obj in inspect.getmembers(module, inspect.isclass):
                         # Ensure the class is defined in the module, not imported
