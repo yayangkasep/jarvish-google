@@ -45,13 +45,17 @@ class SessionManager:
             for i, msg in enumerate(history):
                 role = msg.get("role")
                 
-                # If it's a tool message, ensure the previous message was an assistant tool call
+                # If it's a tool message, ensure the previous message was an assistant tool call or another tool message
                 if role == "tool":
                     if not sanitized:
                         continue # Drop orphaned tool message at the start
                     
                     prev_msg = sanitized[-1]
-                    if prev_msg.get("role") != "assistant" or not prev_msg.get("tool_calls"):
+                    if prev_msg.get("role") == "tool":
+                        pass # Subsequent tool response, allowed
+                    elif prev_msg.get("role") == "assistant" and prev_msg.get("tool_calls"):
+                        pass # First tool response, allowed
+                    else:
                         # Preceding message is not an assistant tool call, drop this tool message
                         continue
                         
