@@ -45,10 +45,15 @@ for pkg in python3 python3-pip git curl; do
     fi
 done
 
-# 3. Create target directory
-echo "[INFO] Preparing J.A.R.V.I.S directory at $TARGET_DIR..."
-if [ ! -d "$TARGET_DIR" ]; then
-    sudo -u "$REAL_USER" mkdir -p "$TARGET_DIR"
+# 3. Clone Repository
+echo "[INFO] Preparing J.A.R.V.I.S repository at $TARGET_DIR..."
+if [ ! -d "$TARGET_DIR/.git" ]; then
+    if [ -d "$TARGET_DIR" ]; then
+        echo "[WARNING] Target directory exists but is not a git repo. Backing up..."
+        sudo mv "$TARGET_DIR" "${TARGET_DIR}_backup_$(date +%s)"
+    fi
+    echo "[INFO] Cloning repository into $TARGET_DIR..."
+    sudo -u "$REAL_USER" git clone "$REPO_URL" "$TARGET_DIR"
 fi
 
 # 4. Install 'uv' if not present
@@ -77,8 +82,9 @@ echo ""
 echo "[INFO] Creating Virtual Environment at $VENV_DIR using uv..."
 sudo -u "$REAL_USER" "$UV_BIN" venv "$VENV_DIR"
 
-echo "[INFO] Installing J.A.R.V.I.S package..."
-sudo -u "$REAL_USER" "$UV_BIN" pip install . --python "$VENV_DIR"
+echo "[INFO] Installing J.A.R.V.I.S package in editable mode..."
+cd "$TARGET_DIR"
+sudo -u "$REAL_USER" "$UV_BIN" pip install -e . --python "$VENV_DIR"
 
 # 6. Install Backend Services (Docker Images)
 echo ""

@@ -178,15 +178,23 @@ def upgrade_system():
     print("=============================================")
     print("Pulling latest code and upgrading package...")
     try:
+        repo_dir = os.path.expanduser("~/.jarvish")
+        
+        # Git pull
+        print("Updating repository...")
+        subprocess.check_call(["git", "reset", "--hard"], cwd=repo_dir)
+        subprocess.check_call(["git", "pull", "origin", "master"], cwd=repo_dir)
+        
         # Use uv if available for much faster upgrades
         uv_bin = os.path.expanduser("~/.local/bin/uv")
         if not os.path.exists(uv_bin):
             uv_bin = os.path.expanduser("~/.cargo/bin/uv")
             
+        print("Installing dependencies...")
         if os.path.exists(uv_bin):
-            subprocess.check_call([uv_bin, "pip", "install", "--upgrade", "git+https://github.com/yayangkasep/jarvish.git", "--python", sys.executable])
+            subprocess.check_call([uv_bin, "pip", "install", "-e", ".", "--python", sys.executable], cwd=repo_dir)
         else:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "git+https://github.com/yayangkasep/jarvish.git"])
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."], cwd=repo_dir)
         print("✅ Upgrade successful!")
         print("Restarting J.A.R.V.I.S service...")
         subprocess.check_call(["sudo", "systemctl", "restart", "jarvish.service"])
