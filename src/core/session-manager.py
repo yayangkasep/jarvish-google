@@ -66,6 +66,10 @@ class SessionManager:
                         # The assistant made a tool call but never got a response (dangling tool call)
                         # We must strip the tool_calls from the assistant message to prevent API error
                         del prev_msg["tool_calls"]
+                        
+                        # If stripping tool_calls makes the message empty, we must delete it entirely
+                        if not prev_msg.get("content") or str(prev_msg.get("content")).strip() == "":
+                            sanitized.pop()
                 
                 sanitized.append(msg)
                 
@@ -74,8 +78,37 @@ class SessionManager:
                 last_msg = sanitized[-1]
                 if last_msg.get("role") == "assistant" and last_msg.get("tool_calls"):
                     del last_msg["tool_calls"]
+                    if not last_msg.get("content") or str(last_msg.get("content")).strip() == "":
+                        sanitized.pop()
+
+            # --- MERGE CONSECUTIVE ROLES ---
+            # Gemini strictly forbids consecutive messages of the same role (e.g., User -> User)
+            final_history = []
+            for msg in sanitized:
+                if not final_history:
+                    final_history.append(msg)
+                    continue
+                
+                prev_msg = final_history[-1]
+                if prev_msg.get("role") == msg.get("role") and msg.get("role") in ["user", "assistant"]:
+                    # Merge contents
+                    prev_content = str(prev_msg.get("content", ""))
+                    curr_content = str(msg.get("content", ""))
                     
-            return sanitized
+                    if prev_content and curr_content:
+                        prev_msg["content"] = prev_content + "\n\n" + curr_content
+                    elif curr_content:
+                        prev_msg["content"] = curr_content
+                        
+                    # Merge tool calls if any
+                    if msg.get("tool_calls"):
+                        if "tool_calls" not in prev_msg:
+                            prev_msg["tool_calls"] = []
+                        prev_msg["tool_calls"].extend(msg["tool_calls"])
+                else:
+                    final_history.append(msg)
+                    
+            return final_history
         finally:
             db.close()
 
