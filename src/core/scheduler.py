@@ -24,10 +24,6 @@ class BackgroundScheduler:
         schedule.every().day.at("17:00").do(self.trigger_evening)
         schedule.every().day.at("20:00").do(self.trigger_night)
         
-        # --- TEST TRIGGER ---
-        # Memaksa J.A.R.V.I.S melakukan simulasi laporan pagi 15 detik setelah bot dinyalakan
-        threading.Timer(15.0, self.trigger_morning).start()
-        
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
         print("[Scheduler] Proactive background thread started successfully!")
