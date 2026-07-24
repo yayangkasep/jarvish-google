@@ -24,7 +24,7 @@ class GmailReadTool:
                             "description": "Pencarian spesifik, misalnya 'in:spam' untuk folder spam, 'is:unread', 'from:budi', atau dibiarkan kosong untuk kotak masuk umum.",
                         }
                     },
-                    "required": [],
+                    "required": ["query"],
                 },
             },
         }
