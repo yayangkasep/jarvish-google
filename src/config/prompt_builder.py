@@ -74,6 +74,8 @@ TOOL_PROMPTS_MAPPING = {
     "SendEmail": GMAIL_SEND_PROMPT,
     "SystemCommand": SYSTEM_OS_PROMPT,
     "UpdateJarvish": SYSTEM_OS_PROMPT,
+    "TestPythonTool": SYSTEM_OS_PROMPT,
+    "RestartJarvish": SYSTEM_OS_PROMPT,
     "InstallSkill": SKILL_MANAGEMENT_PROMPT,
     "CalendarTool": CALENDAR_PROMPT,
     "TaskTool": TASKS_PROMPT,
